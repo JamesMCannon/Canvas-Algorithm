@@ -7,10 +7,9 @@ import seaborn as sns
 sns.set(style="whitegrid")
 # lets stick with a barebones estiamte and see if we need to improve from there
 def Johnson_noise(R, f1, f2):
-    B = f2 - f1 # Hz
-    T = 300 # K 
+    T = 2000 # K 
     k = 1.38e-23 # J/K
-    vrms = np.sqrt(4 * k * R * B * T)
+    vrms = 4 * k * R * T
     return vrms 
 
 def rms2sd(rms, f1, f2):
@@ -35,15 +34,15 @@ f2 = 40e3
 for R in res:
     if R < 1e5:
         vrms = Johnson_noise(R, f1, f2)
-        vsd = rms2sd(vrms, f1, f2)
-        vsd_sum += vsd
+        
+        vsd_sum += vrms
 
 antenna_l = 0.8 
-thermalsum = vsd_sum
+thermalsum = np.sqrt(vsd_sum)
 
 farray = np.linspace(f1, f2, 1000)
 thermalnoise = 1e6 * (thermalsum / antenna_l) * np.ones(len(farray))
-shotnoise = 1e6 * 10**(-7.2) * np.ones(len(farray))
+shotnoise = 1e6 * 10**(-7.3) * np.ones(len(farray))
 
 vsd_currentR1 = shot_noise(R1)
 vsd_currentR2 = shot_noise(R2)
@@ -60,26 +59,27 @@ for f in farray:
     else:
         vnoise_op.append(1e6 * whitenoise / antenna_l)
 
-totalnoise = [v + t + c for v,t,c in zip(vnoise_op, thermalnoise, currentnoise)]
-
-
+totalnoise = [np.sqrt(v**2 + t**2) for v,t in zip(vnoise_op, thermalnoise)]
+finalnoise = [np.sqrt(tt**2 + st**2) for tt, st in zip(totalnoise, shotnoise)]
 fig, ax = plt.subplots(1, 1)
 #plt.semilogx(farray, thermalnoise, '--', label='thermal noise')
 plt.loglog(farray, shotnoise, '--', label='shot noise')
 #plt.semilogx(farray, currentnoise, '--', label='current noise')
 #plt.semilogx(farray, vnoise_op, '--', label='vnoise op amp')
-plt.loglog(farray, totalnoise, '--', label='total receiver noise')
+plt.loglog(farray, totalnoise, '--', label='receiver noise')
+plt.loglog(farray, finalnoise, '-', label='total expected noise')
 plt.loglog(farray, 1 * np.ones(len(farray)), '--', label='CANVAS min. req.')
 #plt.loglog(farray, 10**(-7.2) * 10e6 * np.ones(len(farray)), '--', label='min whistler amplitude Inan et al., 2007')
 
-plt.text(farray[10],shotnoise[10] + 10**(-2.1),'shot noise')
-plt.text(farray[10],totalnoise[10]+ 10**(-2.5),'total receiver noise')
-plt.text(farray[10],1.2,'CANVAS min. req.')
+plt.text(farray[400],shotnoise[100] - 10**(-1.8),'shot noise')
+plt.text(farray[10],totalnoise[10]+ 10**(-2.5),'receiver noise')
+plt.text(farray[200],finalnoise[10]+ 10**(-2.5),'total noise')
+plt.text(farray[200],1.2,'CANVAS min. req.')
 plt.text(farray[50],10,'lightning whistlers')
 
 #plt.legend(loc='center right', fontsize = 8)
 plt.title('Noise Estimate for CANVAS Antenna')
-plt.ylabel('log(uV/m/rt-Hz)')
+plt.ylabel('uV/m/rt-Hz')
 plt.xlabel('Hz')
 
 rect = patches.Rectangle((300,10**(-7.2) * 10e6), 40e3, 10**(-5)*10e6 - 10**(-7.2) * 10e6, linewidth=1,alpha = 0.3,facecolor='b')
