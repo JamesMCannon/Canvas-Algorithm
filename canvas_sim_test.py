@@ -26,41 +26,37 @@ bx_data = loadmat(bx_datafile)
 by_data = loadmat(by_datafile)
 
 # grab start time
-data_start = dt.datetime(int(bx_data['start_year']), int(bx_data['start_month']), int(bx_data['start_day']), int(bx_data['start_hour']), int(bx_data['start_minute']), int(bx_data['start_second']))
+data_start = dt.datetime(int(bx_data['start_year']), int(bx_data['start_month']), 
+int(bx_data['start_day']), int(bx_data['start_hour']), int(bx_data['start_minute']), 
+int(bx_data['start_second']))
 
-# get data -- 10 min of data? 
-bx_data = bx_data['data']
-by_data = by_data['data']
+# define param of input data
+fs_vlf = 100e3
+n_samples = 100e3 # user defined
+data_len_vlf = n_samples / fs_vlf
 
-# create a timevec for the data
-data_dt = 100e3 / len(bx_data)
-data_dt = dt.timedelta(microseconds=data_dt*1e6) # convert time int in data to microseconds
+bx_data = np.squeeze(bx_data['data'][:int(n_samples)])
+by_data = np.squeeze(by_data['data'][:int(n_samples)])
 
-timevec = []
-for i, i_data in enumerate(bx_data):
-    timevec.append(data_start+(data_dt*(i+1)))
-    print(i)
-print('finished')
-# convert to a dataframe
-time_vec = pd.to_datetime(time_vec)
-d_bx = {'time': time_vec, 'data': bx_data}
-d_by = {'time': time_vec, 'data': by_data}
+# create a timevec for the data at current sample rate
+data_dt_vlf = dt.timedelta(microseconds=1e6/fs_vlf) # convert time delta to datetime obj.
+time_vec_vlf = [data_start+(data_dt_vlf*i) for i in range(int(n_samples))] # create time vec
 
-df_bx = pd.DataFrame(d_bx)
-df_by = pd.DataFrame(d_by)
+# create a timevec for the data at desired sampling freq.
+fs = 2**17
+data_dt = dt.timedelta(microseconds=7.62939) # convert time delta to datetime obj. - nano sec to avoid roundoff error
+time_vec = [data_start+(data_dt*i) for i in range(int(fs * n_samples / fs_vlf))] # create time vec
 
-# data is 100kHz, but canvas sampling is 2^17 (131072 Hz) -- resample data
-# use pandas resampling func to resample an interpolate - using polynomial order 2
-upsampled = series.resample('D')
-interpolated = upsampled.interpolate(method='spline', order=2)
+# interpolate w a linear func 
+t_vlf = np.linspace(0, len(time_vec_vlf), num=len(time_vec_vlf), endpoint=True)
+t_fs = np.linspace(0, len(time_vec_vlf), num=len(time_vec), endpoint=True)
 
-# finally, convert to 16 bit int for input time series data
-bx_array = np.array()
-by_array = np.array()
+f_x = scipy.interpolate.interp1d(t_vlf, bx_data)
+f_y = scipy.interpolate.interp1d(t_vlf, by_data)
 
-bx_list = [np.int16(bxi) for bxi in bx_data]
-bx_list = [np.int16(bxi) for bxi in bx_data]
+bx = f_x(t_fs)
+by = f_y(t_fs)
+print(data_dt*fs)
 
-bx = np.array(bx_list)
-by = np.array(by_list)
-# ---------------- checkpoint -------------
+#plt.plot(time_vec_vlf, bx_data, '-', time_vec, bx, '-')
+#plt.show()
