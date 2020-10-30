@@ -77,7 +77,7 @@ def resample(data, sample_len, fs_vlf, fs):
 def get_win(nFFT): # input = number of FFT points
 
     # NEED TO CHECK THIS
-    win = (2**32-1) * hanning(nFFT)
+    win = (2**16-1) * hanning(nFFT)
 
     return win
 # -------------------------------------------------------------------------------------
@@ -105,8 +105,6 @@ def power_xspectra(c1, c2):
 # ----------------------- Average Frequency Domain Data in Time ------------------------
 def time_avg(P, nFFT, fs): # input power array
 
-    # add one more element??????
-    P.append(np.zeros(nFFT))
 
     # scalar representing number of time points for one second
     accumulate_t = int(fs/(nFFT/2))
@@ -161,4 +159,5 @@ def rebin_canvas(P, fbins, center_freqs): # input power vec, canvas fbins, fft f
         rebinned_power.append(rebinned_tp)
 
     return rebinned_power # return size i x j where i = seconds and j = len of fbins
+    # MISSED THE TRANSMITTER BINS !!!!! - 65 or so
 # ------------------------------------------------------------------------------------
