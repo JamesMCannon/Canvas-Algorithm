@@ -8,10 +8,10 @@ from canvas_alg_helper_funcs import get_vlfdata, resample, get_win, power_spectr
 # ----------------------------- Create a Test Signal -------------------------------
 # create time domain data
 fs = float(2**17)                      # sampling freq. 
-sample_len = 10                        # seconds
+sample_len = 4                         # seconds
 t_vec = np.arange(0, sample_len, 1/fs) # create time vec
-signal_freq = 1e3                   # signal freq.
-amp = 2^8 -18                        # signal amplitude
+signal_freq = 1e3                      # signal freq.
+amp = 2^8 -18                          # signal amplitude
 # is the window output correct for the low freq?
 # channels (ex, ey, bx, by, bz)
 shift = np.pi/2  # shift between 2 channels                       
@@ -20,23 +20,43 @@ bx = amp * np.sin(signal_freq * 2 * np.pi * t_vec)
 by = amp * np.sin(signal_freq * 2 * np.pi * t_vec + shift)
 
 # collect time domain channels here
-channels_td = [bx, by]                
+channels_td = [bx, by]
 
-# plot a small chunk of time series data
-plt.plot(t_vec[:1024], bx[:1024])
-plt.plot(t_vec[:1024], by[:1024])
+# -----------------------------check input signal------------------------------------
+plt_chk = 1024
+"""
+plt.plot(t_vec[:plt_chk], bx[:plt_chk])
+plt.plot(t_vec[:plt_chk], by[:plt_chk])
+plt.title('Input Signal')
 plt.show()
 plt.close()
+"""
 # ------------------------------------------------------------------------------------
 
-#datadir = 'vlf_data/'
-#bx_raw, by_raw = get_vlfdata(datadir)
-#sample_len = 2 # length of sample desired
-#sample_fs = 100e3 # frequency of sample
-#bx, by = resample([bx_raw, by_raw], sample_len, sample_fs, fs)
-#channels_td = [bx, by]
 
-# ---------------------------- Check 16bit Input Stimulus ----------------------------
+# ----------------------or get input signal from VLF data-----------------------------
+"""
+datadir = 'vlf_data/'
+bx_raw, by_raw = get_vlfdata(datadir)
+sample_len = 2 # length of sample desired
+sample_fs = 100e3 # frequency of sample
+bx, by = resample([bx_raw, by_raw], sample_len, sample_fs, fs)
+channels_td = [bx, by]
+
+# -----------------------------check input signal------------------------------------
+# plot a small chunk of time series data
+plt_chk = 1024
+plt.plot(t_vec[:plt_chk], bx[:plt_chk])
+plt.plot(t_vec[:plt_chk], by[:plt_chk])
+plt.title('Input Signal')
+plt.show()
+plt.close()
+"""
+# ------------------------------------------------------------------------------------
+
+
+# ------------------------ Convert to 16bit Input Stimulus ---------------------------
+# WHAT? make 32 input maybe?
 # convert each channel of time series data to 16 bit (signed) integer
 #for ci, c in enumerate(channels_td):
 #    channels_td[ci] = np.int16(c)
@@ -47,10 +67,18 @@ plt.close()
 # get hanning window coefs
 nFFT = 1024
 win = get_win(nFFT) # need to confirm bit output here
+
+# -----------------------------check input window------------------------------------
+"""
+plt.plot(np.arange(0, len(win)), win)
+plt.title('Input Window')
+plt.show()
+plt.close()
+"""
 # ------------------------------------------------------------------------------------
 
 
-# --------------------------- Break Up Time Domain Data -------------------------------
+# ----------------------------Break Up Time Domain Data-------------------------------
 # segmented time domain data
 channels_td_segmented = []
 
@@ -75,12 +103,10 @@ for c in channels_td:
 
     # all channels now segmented and stored here
     channels_td_segmented.append(c_segs)
-
 # ------------------------------------------------------------------------------------
 
 # ---------------------------- Perform FFT -------------------------------------------
-# Take FFT on input * window function for every 1024 points shifting by 512
-# loop through all 512-length-segments -- this step accounts for the 50% overlap
+# FFT on input * window for every 1024 points shifting by 512 - 50% overlap 
 channels_fd = [] # store channels now in frequency domain
 
 for c in channels_td_segmented:
@@ -94,34 +120,46 @@ for c in channels_td_segmented:
             cs_2 = np.append(c[i], clast) 
         else:
             cs_2 = np.append(c[i], c[i+1])
-            #if i == 2:
-            #    plt.plot(np.arange(0,len(cs_2)), cs_2)
-            #    plt.show()
-            #    plt.close()
 
         # mutitply elementwise by windowing func
-        cs_2 = [float(checkcs) for checkcs in cs_2]
         cs_2 = np.array(cs_2)
         cs_win = np.multiply(win, cs_2) 
 
+        # ---------------------------check win * input---------------------------------
+        """
+        if i==1: 
+            plt.plot(np.arange(0, len(cs_win)), cs_win)
+            plt.title('Input Window x Input Signal')
+            #plt.show()
+            plt.close()
+        """
+        # ----------------------------------------------------------------------------
+
         # take FFT
         cs_f = np.fft.fft(cs_win)
+
+        # ---------------------------check FFT---------------------------------------
+        center_freqs = np.fft.fftfreq(nFFT,d=1/fs)
+        """
+        if i==1:
+            center_freqs = np.fft.fftfreq(nFFT,d=1/fs)
+            plt.plot(center_freqs, cs_f)
+            plt.title('FFT Spectrum')
+            #plt.show()
+            plt.close()
+        """
+        # ---------------------------------------------------------------------------
         
         # save it
         c_fd.append(cs_f)
-        if i == len(c)-2:
-            plt.plot(np.arange(0,len(cs_win)), cs_win)
-            plt.show()
-            plt.close()
 
     # save the output for each channel - vector of 1024-pt FFTs
     channels_fd.append(c_fd) 
 
-    # check 32 bit out here
 # ------------------------------------------------------------------------------------
 
 
-# ------------------------------ Power Calculation ------------------------------------
+# ------------------------------ Power Calculation -----------------------------------
 # QUESTION: c^2 in FPGA?
 spectra = []
 xspectra = []
@@ -130,28 +168,24 @@ xspectra = []
 for c in channels_fd: 
     spectra.append(power_spectra(c))
 
+    # --------------------------check power calc-------------------------------------
+    t_slice = 1
+    plt.loglog(center_freqs, power_spectra(c)[t_slice])
+    plt.title('Power Spectra')
+    plt.show()
+    plt.close()
+    # -------------------------------------------------------------------------------
+
+
 # loop through the channels and perform xspectra calcs
 for i in range(0,len(channels_fd)):
     for j in range(i+1,len(channels_fd)):
         Preal, Pimag = power_xspectra(channels_fd[i], channels_fd[j])
         xspectra.append(Preal)
         xspectra.append(Pimag)
-
-# check output here! 64 bit
+        
 # ------------------------------------------------------------------------------------  
 
-fname = 'fbins.txt'                                 
-fbins_str = np.genfromtxt(fname, dtype='str') 
-fbins_dbl = [(float(f[0].replace(',','')),float(f[1].replace(',',''))) for f in fbins_str]
-
-# monotonic and 1D list of canvas fbins
-fbins = [item for sublist in fbins_dbl for item in sublist]
-ff = fbins[::2] # grab CENTER f of canvas bins
-
-center_freqs = np.fft.fftfreq(nFFT,d=1/fs)
-#plt.loglog(center_freqs, spectra[0][2])
-#plt.show()
-#plt.close()
 
 # -------------------------------------- Time Avg ------------------------------------
 # time average for each spectra and cross spectra
@@ -176,7 +210,6 @@ center_freqs = np.fft.fftfreq(nFFT,d=1/fs) # seems like missing last bin, but do
 spectra_favg = [rebin_canvas(s, fbins, center_freqs) for s in spectra_tavg]
 xspectra_favg = [rebin_canvas(xs, fbins, center_freqs) for xs in xspectra_tavg]
 
-# check output here -- still 64 bit
 # ------------------------------------------------------------------------------------
 
 
@@ -203,25 +236,30 @@ xspectra_dc = [2**(xsc / 32) for xsc in xspectra_compressed]
 # doesnt seem to be working for only one second ....
 t_size = np.shape(spectra_favg)[1]    # second dimension is number of time points
 tt = np.arange(1,t_size+1,1)          # create a time vector
-ff = fbins[::2] # grab CENTER f of canvas bins
 
-
-#plt.loglog(ff, spectra_dc[0][3])
-#plt.show()
-#plt.close()
+# parse text file with center canvas bins
+fname = 'fbins_center.txt'                                 
+fbins_c_str = np.genfromtxt(fname, dtype='str') 
+fbins_center = [(float(f.replace(',',''))) for f in fbins_c_str]
+# --------------------------check decomp calc------------------------------------
+plt.loglog(fbins_center, spectra_dc[0][t_slice])
+plt.title('Power Spectra After Decompression')
+plt.show()
+plt.close()
+# -------------------------------------------------------------------------------
 
 fig, axs = plt.subplots(1, len(spectra))
 plt.subplots_adjust(wspace=0.3,hspace=0.5)
 
-
-for i, s in enumerate(spectra_sqrt):
-    spectrogram_spec = np.array(s).T
-    axs[i].pcolormesh(tt, np.log10(ff), np.log10(spectrogram_spec), cmap = plt.cm.jet)
+for i, s in enumerate(spectra_dc):
+    s = np.array(s).T
+    axs[i].pcolormesh(tt, np.log10(fbins_center), s, cmap = plt.cm.jet)
     axs[i].set_title('channel'+ str(i))
 
 # set labels
 axs[0].set_ylabel('freq [Hz]')
 axs[0].set_xlabel('time [s]')
 axs[1].set_xlabel('time [s]')
-#plt.show()
+plt.show()
+plt.close()
 # ------------------------------------------------------------------------------------
