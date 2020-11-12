@@ -65,7 +65,7 @@ def resample(data, sample_len, fs_vlf, fs):
     bx_a = f_x(t_fs)
     by_a = f_y(t_fs)
 
-    # convert to 16 bit inputs
+    # convert to 16 bit inputs - NO
     bx = [np.int16(x) for x in bx_a]
     by = [np.int16(y) for y in by_a]
 
@@ -76,15 +76,17 @@ def resample(data, sample_len, fs_vlf, fs):
 # ---------------------------- Get Hanning Window Coeffs ------------------------------
 def get_win(nFFT): # input = number of FFT points
 
-    # NEED TO CHECK THIS
-    win = (2**16-1) * hanning(nFFT)
-
+    win_out = ((2**16)-1) * hanning(nFFT)
+    win = [int(w) for w in win_out] # make int window
+    win = np.array(win)
+    
     return win
 # -------------------------------------------------------------------------------------
 
 
 # ---------------------------- Compute Power of Spectra --------------------------------
 def power_spectra(c):
+
     # real^2 + imag^2 = power of spectra term
     Ps = [np.real(fch)**2 + np.imag(fch)**2 for fch in c] 
 
@@ -94,20 +96,23 @@ def power_spectra(c):
 
 # ---------------------------- Compute Power of XSpectra -------------------------------
 def power_xspectra(c1, c2):
+
+    Pxs_r = []
+    Pxs_i = []
+
     # diff channel: R = real1*real2 + imag1*imag2 , I = real1*imag2 - real2*imag1
-    Pxs_r = [np.real(np.real(fch) * np.real(fchx) + np.imag(fch) * np.imag(fchx)) for fchx, fch in zip(c1, c2)]
-    Pxs_i = [np.real(fchx) * np.imag(fch) - np.real(fch) * np.imag(fchx) for fchx, fch in zip(c1, c2)]
-    
+    Pxs_r = [np.real(fch) * np.real(fchx) + np.imag(fch) * np.imag(fchx) for fch, fchx in zip(c1, c2)]
+    Pxs_i = [np.real(fch) * np.imag(fchx) - np.real(fchx) * np.imag(fch) for fch, fchx in zip(c1, c2)]
+
     return Pxs_r, Pxs_i
 # -------------------------------------------------------------------------------------
 
 
 # ----------------------- Average Frequency Domain Data in Time ------------------------
-def time_avg(P, nFFT, fs): # input power array
-
+def time_avg(P, nFFT, fs, nsec): # input power array
 
     # scalar representing number of time points for one second
-    accumulate_t = int(fs/(nFFT/2))
+    accumulate_t = int(nsec * fs/(nFFT/2))
 
     # loop through each time point
     P_avg = []
@@ -159,5 +164,4 @@ def rebin_canvas(P, fbins, center_freqs): # input power vec, canvas fbins, fft f
         rebinned_power.append(rebinned_tp)
 
     return rebinned_power # return size i x j where i = seconds and j = len of fbins
-    # MISSED THE TRANSMITTER BINS !!!!! - 65 or so
 # ------------------------------------------------------------------------------------
