@@ -10,7 +10,7 @@ from canvas_alg_helper_funcs import get_vlfdata, resample, get_win, power_spectr
 # create time domain data
 fs = 131072.                           # sampling freq. 
 sample_len = 3.0                         # seconds
-t_vec = np.linspace(0, sample_len, num=fs*sample_len)   # create time vec
+t_vec = np.linspace(0, sample_len, num=int(fs*sample_len))   # create time vec
 signal_freq1 = 8.3e3                     # signal freq. 1
 signal_freq2 = 598                     # signal freq. 2
 amp = 249.                             # signal amplitude -- SIGNED 
@@ -30,14 +30,6 @@ by = [round(byy,0) for byy in by]
 
 # collect time domain channels here
 channels_td = [bx, by]
-
-plt_chk = int(1e3)
-for ch, ch_check in zip(channels_td, check):
-    plt.plot(t_vec[:plt_chk], ch[:plt_chk])
-    plt.plot(t_vec[:plt_chk], ch_check[:plt_chk])
-    plt.title('Input Signal - first 1024')
-    plt.show()
-    plt.close()
 
 do_plots = True
 
@@ -162,6 +154,9 @@ for ci, c in enumerate(channels_td_segmented):
 
         # take FFT
         cs_f = fft(cs_win)
+
+        # make it match IDL
+        cs_f = cs_f / nFFT
 
         # convert real and imag to int
         cs_f_r = [int(np.real(c_r)) for c_r in cs_f]
@@ -334,7 +329,7 @@ tt = np.arange(1,t_size+1,1)          # create a time vector
 fig, axs = plt.subplots(1, len(spectra))
 plt.subplots_adjust(wspace=0.3,hspace=0.5)
 
-for i, s in enumerate(spectra_dc):
+for i, s in enumerate(spectra_favg):
     s = np.array(s).T
     pcm = axs[i].pcolormesh(tt, fbins_center, np.log10(s), cmap = plt.cm.jet)
     axs[i].set_title('channel'+ str(i))
@@ -344,7 +339,7 @@ fig.colorbar(pcm, ax=axs[len(spectra_dc)-1])
 axs[0].set_ylabel('freq [Hz]')
 axs[0].set_xlabel('time [s]')
 axs[1].set_xlabel('time [s]')
-#plt.show()
+plt.show()
 plt.close()
 
 # ------------------------------------------------------------------------------------
