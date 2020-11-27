@@ -9,11 +9,14 @@ from canvas_alg_helper_funcs import get_vlfdata, resample, get_win, power_spectr
 # ----------------------------- Create a Test Signal ------------------------------- 
 # create time domain data
 fs = 131072.                           # sampling freq. 
-sample_len = 3.0                         # seconds
+sample_len = 10*(2**(-8))               # seconds
 t_vec = np.linspace(0, sample_len, num=int(fs*sample_len))   # create time vec
 signal_freq1 = 8.3e3                     # signal freq. 1
-signal_freq2 = 598                     # signal freq. 2
+signal_freq2 = 25.2e3                     # signal freq. 2
 amp = 249.                             # signal amplitude -- SIGNED 
+
+# add white noise with spectral density comprable to expected senisitivity for E or B
+# leakage in TX bins from 25.2e3 -- look at width of fft limit 
 
 # channels (ex, ey, bx, by, bz)
 # shift = np.pi/2  # shift between 2 channels                       
@@ -26,12 +29,18 @@ check = [bx_check, by_check]
 
 # make an integer
 bx = [round(bxx,0) for bxx in bx]
+
+file = 'channel1_input_int2.txt'
+f = open(file, 'r')
+datalines = [int(line) for line in f]
+bx = datalines
+
 by = [round(byy,0) for byy in by]
 
 # collect time domain channels here
 channels_td = [bx, by]
 
-do_plots = True
+do_plots = False
 
 # -----------------------------check input signal------------------------------------
 plt_chk = 1024
@@ -44,13 +53,17 @@ if do_plots:
     plt.close()
 
 # cast input (ints) to 16bit int represented in hex
-with open('channel1_input.txt', 'w') as output:
-    for b in bx[:1024]:
+with open('channel1_input_hex.txt', 'w') as output:
+    for b in bx:
         output.write(format(np.int16(b) & 0xffff, '04X') + '\n')
 
-with open('channel2_input.txt', 'w') as output:
-    for b in by[:1024]:
-        output.write(format(np.int16(b) & 0xffff, '04X') + '\n')
+with open('channel1_input_int.txt', 'w') as output:
+    for b in bx:
+        output.write(str(np.int16(b))+'\n')
+
+#with open('channel2_input.txt', 'w') as output:
+#    for b in by[:2048]:
+#        output.write(format(np.int16(b) & 0xffff, '04X') + '\n')
 # ------------------------------------------------------------------------------------
 
 # ----------------------or get input signal from VLF data-----------------------------
@@ -77,6 +90,11 @@ plt.close()
 # get hanning window coefs
 nFFT = 1024
 win = get_win(nFFT) # need to confirm bit output here
+# cast input (ints) to 16bit int represented in hex
+
+with open('win2.txt', 'w') as output:
+    for w in win:
+        output.write(str(np.uint16(w))+'\n')
 
 # -----------------------------check input window------------------------------------
 if do_plots:
@@ -85,7 +103,7 @@ if do_plots:
     plt.show()
     plt.close()
 # ------------------------------------------------------------------------------------
-
+"""
 # ----------------------------Break Up Time Domain Data-------------------------------
 # segmented time domain data
 channels_td_segmented = []
@@ -101,6 +119,7 @@ for c in channels_td:
 
         # grab a segment
         cs = c[i:i+int(nFFT/2)] 
+        #print(i, i+int(nFFT/2))
 
         # add 0s to segment that isn't 512 points
         while len(cs) < int(nFFT/2): 
@@ -121,31 +140,34 @@ for c in channels_td:
     channels_td_segmented.append(c_segs)
 
 # ------------------------------------------------------------------------------------
-
+"""
+"""
 # ---------------------------- Perform FFT -------------------------------------------
 # FFT on input * window for every 1024 points shifting by 512 -- 50% overlap 
 channels_fd = [] # store channels now in frequency domain
 
 for ci, c in enumerate(channels_td_segmented):
+
     c_fd = [] # store each segment of channel f domain
 
     # go through all 512-length segments
-    for i in range(len(c)):
-        if i == len(c)-1: # check if last segment
-            clast = np.zeros(np.size(c[i])) # add zeros for right after last segment
-            # grab current segment and next one -- THIS STEP COMBINES TWO 512-length into 1024 
-            cs_2 = np.append(c[i], clast) 
-        else:
-            cs_2 = np.append(c[i], c[i+1])
+    for i in range(0,len(c),2):
+
+        cs_2 = np.append(c[i], c[i+1])
 
         # mutitply elementwise by windowing func
         cs_2 = np.array(cs_2)
         cs_win = np.multiply(win, cs_2) # should be integer (with max 2^31-1)
 
+        if ci == 0:
+            with open('channel1_win2.txt', 'a') as output:
+                for csw in cs_win:
+                    output.write(str(np.int32(csw))+'\n')
+
         # ---------------------------check win * input---------------------------------
-        
-        if i==1 and do_plots:
-            plt.plot(np.arange(0, len(cs_win)), cs_win)
+        cs_winw = [np.int32(csw) for csw in cs_win]
+        if i==0 and do_plots:
+            plt.plot(np.arange(0, len(cs_win)), cs_winw)
             plt.title('Input Window x Input Signal - First 1024')
             plt.show()
             plt.close()
@@ -162,6 +184,24 @@ for ci, c in enumerate(channels_td_segmented):
         cs_f_r = [int(np.real(c_r)) for c_r in cs_f]
         cs_f_i = [int(np.imag(c_i)) for c_i in cs_f]
 
+        #if i < 9:
+        if ci == 0:
+            with open('channel1_fft_real_hex2.txt', 'a') as output:
+                for c_r in cs_f_r:
+                    output.write(format(np.int32(c_r) & 0xffffffff, '08X') + '\n')
+
+            with open('channel1_fft_imag_hex2.txt', 'a') as output:
+                for c_i in cs_f_i:
+                    output.write(format(np.int32(c_i) & 0xffffffff, '08X') + '\n')
+            
+            with open('channel1_fft_real_int2.txt', 'a') as output:
+                for c_r in cs_f_r:
+                    output.write(str(np.int32(c_r))+'\n')
+
+            with open('channel1_fft_imag_int2.txt', 'a') as output:
+                for c_i in cs_f_i:
+                    output.write(str(np.int32(c_i))+'\n')
+
         # recreate complex number and cast to an array
         cs_f = [complex(c_r, c_i) for c_r, c_i in zip(cs_f_r, cs_f_i)]
         cs_f = np.array(cs_f)
@@ -171,18 +211,98 @@ for ci, c in enumerate(channels_td_segmented):
 
         if i==1 and do_plots:
             plt.semilogy(center_freqs[1:nFFT//2], np.abs(cs_f[1:nFFT//2]), '-r')
-            plt.title('FFT Spectrum -- first 1024')
+            plt.title('FFT')
+            plt.show()
+            plt.close()
+        # ---------------------------------------------------------------------------
+        
+        # save it
+        c_fd.append(cs_f)
+
+    # save the output for each channel - vector of 1024-pt FFTs
+    channels_fd.append(c_fd) 
+
+
+"""
+
+# ---------------------------- Perform FFT -------------------------------------------
+# FFT on input * window for every 1024 points shifting by 512 -- 50% overlap 
+channels_fd = [] # store channels now in frequency domain
+
+for ci, c in enumerate(channels_td):
+
+    c_fd = [] # store each segment of channel f domain
+
+    # go through all 512-length segments
+    remainder = int(len(c)) % nFFT
+    if remainder !=0:
+        need_zero = nFFT - remainder
+        for i in range(len(need_zero)):
+            c.append(0)
+    for i in range(0, len(c), nFFT//2):
+        cs_2 = c[i:i+nFFT]
+        #print(i, i+nFFT)
+        if len(cs_2) != nFFT:
+            cs_2.extend(np.zeros(nFFT//2))
+
+        # mutitply elementwise by windowing func
+        cs_2 = np.array(cs_2)
+        cs_win = np.multiply(win, cs_2) # should be integer (with max 2^31-1)
+
+        if ci == 0:
+            with open('channel1_win.txt', 'a') as output:
+                for csw in cs_win:
+                    output.write(str(np.int32(csw))+'\n')
+
+        # ---------------------------check win * input---------------------------------
+        cs_winw = [np.int32(csw) for csw in cs_win]
+        if i==0 and do_plots:
+            plt.plot(np.arange(0, len(cs_win)), cs_winw)
+            plt.title('Input Window x Input Signal - First 1024')
             plt.show()
             plt.close()
         
-        if i==1:
-            with open('channel' + str(ci+1) + '_fft_real.txt', 'w') as output:
+        # ----------------------------------------------------------------------------
+
+        # take FFT
+        cs_f = fft(cs_win)
+
+        # make it match IDL
+        cs_f = cs_f / nFFT
+
+        # convert real and imag to int
+         # only need first half (match IDL/FPGA)
+        cs_f_r = [int(np.real(c_r)) for c_r in cs_f[:nFFT//2]]
+        cs_f_i = [int(np.imag(c_i)) for c_i in cs_f[:nFFT//2]]
+
+        if ci == 0:
+            with open('channel1_fft_real_hex.txt', 'a') as output:
                 for c_r in cs_f_r:
                     output.write(format(np.int32(c_r) & 0xffffffff, '08X') + '\n')
-            
-            with open('channel' + str(ci+1) + '_fft_real.txt', 'w') as output:
+
+            with open('channel1_fft_imag_hex.txt', 'a') as output:
                 for c_i in cs_f_i:
                     output.write(format(np.int32(c_i) & 0xffffffff, '08X') + '\n')
+            
+            with open('channel1_fft_real_int.txt', 'a') as output:
+                for c_r in cs_f_r:
+                    output.write(str(np.int32(c_r))+'\n')
+
+            with open('channel1_fft_imag_int.txt', 'a') as output:
+                for c_i in cs_f_i:
+                    output.write(str(np.int32(c_i))+'\n')
+
+        # recreate complex number and cast to an array
+        cs_f = [complex(c_r, c_i) for c_r, c_i in zip(cs_f_r, cs_f_i)]
+        
+        # ---------------------------check FFT (win and no win)----------------------------------- 
+        center_freqs = [fs/nFFT * ff for ff in np.arange(1, 513)]
+
+        if i==1 and do_plots:
+            plt.semilogy(center_freqs[1:nFFT//2], np.abs(cs_f[1:nFFT//2]), '-r')
+            plt.title('FFT')
+            plt.show()
+            plt.close()
         # ---------------------------------------------------------------------------
         
         # save it
@@ -203,15 +323,17 @@ for ci, c in enumerate(channels_fd):
     spectra.append(power_spectra(c))
 
     # --------------------------check power calc-------------------------------------
-    if do_plots:
-        plt.semilogy(center_freqs[1:nFFT//2], power_spectra(c)[1][1:nFFT//2])
-        plt.title('Power Spectra first FFT')
-        plt.show()
-        plt.close()
+    #if do_plots:
+    #    plt.semilogy(center_freqs[1:nFFT//2], power_spectra(c)[1][1:nFFT//2])
+    #    plt.title('Power Spectra first FFT')
+    #    plt.show()
+    #    plt.close()
   
-    with open('channel'+str(ci+1)+'_spectra.txt', 'w') as output:
-        for s in power_spectra(c)[0]:
-            output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
+    #with open('channel'+str(ci+1)+'_spectra.txt', 'w') as output:
+    #    for s in power_spectra(c)[0]:
+    #        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
+    #    for s in power_spectra(c)[1]:
+    #        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
 
   # -------------------------------------------------------------------------------
 
@@ -223,12 +345,16 @@ for i in range(0,len(channels_fd)):
         xspectra.append(Pimag)
 
 # ---------------------------------- check output ------------------------------------
-with open('channel_xspectra_real.txt', 'w') as output:
-    for s in xspectra[0][0]:
-        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
-with open('channel_xspectra_imag.txt', 'w') as output:
-    for s in xspectra[1][0]:
-        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
+#with open('channel_xspectra_real.txt', 'w') as output:
+#    for s in xspectra[0][0]:
+#        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
+#    for s in xspectra[0][1]:
+#        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
+#with open('channel_xspectra_imag.txt', 'w') as output:
+#    for s in xspectra[1][0]:
+#        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
+#    for s in xspectra[1][1]:
+#        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
 # ------------------------------------------------------------------------------------  
 
 # -------------------------------------- Time Avg ------------------------------------
@@ -284,7 +410,7 @@ fbins_center = [(float(f.replace(',',''))) for f in fbins_c_str]
 if do_plots:
     for ft, ft_tx in zip(spectra_favg, spectra_tx_favg):
         plt.semilogy(fbins_center, ft[0][0:nFFT//2])
-        plt.semilogy(TX_fbins_cen, ft_tx[0][0:nFFT//2])
+        plt.semilogy(TX_fbins_cen, ft_tx[0][0:nFFT//2], '.') # debug this ?? 
         plt.title('After averaging bins - first second')
         plt.show()
         plt.close()
@@ -339,7 +465,7 @@ fig.colorbar(pcm, ax=axs[len(spectra_dc)-1])
 axs[0].set_ylabel('freq [Hz]')
 axs[0].set_xlabel('time [s]')
 axs[1].set_xlabel('time [s]')
-plt.show()
+#plt.show()
 plt.close()
 
 # ------------------------------------------------------------------------------------

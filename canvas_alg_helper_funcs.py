@@ -75,14 +75,14 @@ def resample(data, sample_len, fs_vlf, fs):
 
 # ---------------------------- Get Hanning Window Coeffs ------------------------------
 def get_win(nFFT): # input = number of FFT points
+    # hanning window according to IDL func (asymmetric)
 
-    win_out = ((2**16)-1) * hanning(nFFT)
+    win_out = [((2**16)-1)*(0.5 - (0.5)*np.cos(2* np.pi * k/ nFFT)) for k in range(nFFT)]
     win = [int(w) for w in win_out] # make int window
     win = np.array(win)
-    
+
     return win
 # -------------------------------------------------------------------------------------
-
 
 # ---------------------------- Compute Power of Spectra --------------------------------
 def power_spectra(c):
