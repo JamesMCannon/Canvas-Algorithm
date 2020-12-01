@@ -11,6 +11,15 @@ import collections
 # import constants
 c = 2.998e8 # m/s 
 
+# ------------------------------- 2's COMP ---------------------------------------
+def twos_complement(hexstr,bits):
+    value = int(hexstr,16)
+    if value & (1 << (bits-1)):
+        value -= 1 << bits
+    return value
+# --------------------------------------------------------------------------------
+
+
 # ---------------------------- Get VLF Data Table Mtn ------------------------------
 def get_vlfdata(datadir): # directory of data
     # import input data from VLF rx on table mtn

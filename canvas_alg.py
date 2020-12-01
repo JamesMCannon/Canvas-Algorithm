@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 import datetime as dt
 from scipy.fftpack import fft, fftfreq, fftshift
-from canvas_alg_helper_funcs import get_vlfdata, resample, get_win, power_spectra, rebin_canvas, power_xspectra, time_avg  
+from canvas_alg_helper_funcs import get_vlfdata, resample, get_win, power_spectra, rebin_canvas, power_xspectra, time_avg, twos_complement  
 
 # ----------------------------- Create a Test Signal ------------------------------- 
 # create time domain data
@@ -30,17 +30,17 @@ check = [bx_check, by_check]
 # make an integer
 bx = [round(bxx,0) for bxx in bx]
 
-file = 'channel1_input_int2.txt'
+file = 'channel1_input_hex_USETHIS.txt'
 f = open(file, 'r')
-datalines = [int(line) for line in f]
-bx = datalines
-
+datalines = [line for line in f]
+bx = [twos_complement(p,16) for p in datalines]
+#print(bx)
 by = [round(byy,0) for byy in by]
 
 # collect time domain channels here
-channels_td = [bx, by]
+channels_td = [bx]
 
-do_plots = False
+do_plots = True
 
 # -----------------------------check input signal------------------------------------
 plt_chk = 1024
@@ -240,8 +240,9 @@ for ci, c in enumerate(channels_td):
         for i in range(len(need_zero)):
             c.append(0)
     for i in range(0, len(c), nFFT//2):
+    #for i in range(0, len(c), nFFT): # for no overlap
         cs_2 = c[i:i+nFFT]
-        #print(i, i+nFFT)
+        print(i, i+nFFT)
         if len(cs_2) != nFFT:
             cs_2.extend(np.zeros(nFFT//2))
 
@@ -271,7 +272,7 @@ for ci, c in enumerate(channels_td):
         cs_f = cs_f / nFFT
 
         # convert real and imag to int
-         # only need first half (match IDL/FPGA)
+        # only need first half (match IDL/FPGA)
         cs_f_r = [int(np.real(c_r)) for c_r in cs_f[:nFFT//2]]
         cs_f_i = [int(np.imag(c_i)) for c_i in cs_f[:nFFT//2]]
 
@@ -298,7 +299,7 @@ for ci, c in enumerate(channels_td):
         # ---------------------------check FFT (win and no win)----------------------------------- 
         center_freqs = [fs/nFFT * ff for ff in np.arange(1, 513)]
 
-        if i==1 and do_plots:
+        if i==0 and do_plots:
             plt.semilogy(center_freqs[1:nFFT//2], np.abs(cs_f[1:nFFT//2]), '-r')
             plt.title('FFT')
             plt.show()
