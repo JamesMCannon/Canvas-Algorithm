@@ -87,7 +87,7 @@ def get_win(nFFT): # input = number of FFT points
     # hanning window according to IDL func (asymmetric)
 
     win_out = [((2**16)-1)*(0.5 - (0.5)*np.cos(2* np.pi * k/ nFFT)) for k in range(nFFT)]
-    win = [int(w) for w in win_out] # make int window
+    win = [round(w) for w in win_out] # make int window
     win = np.array(win)
 
     return win

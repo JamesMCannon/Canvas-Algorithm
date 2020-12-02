@@ -21,49 +21,47 @@ fpga_y_data = [twos_complement(p,32) for p in datalines]
 cs_f_fpga = [complex(c_r, c_i) for c_r, c_i in zip(fpga_x_data, fpga_y_data)]
 
 # --------- ------- ------- python FFT --------- ------- -------
-file = 'channel1_fft_real_hex.txt'
+file = 'channel0_fft_real_hex.txt'
 f = open(file, 'r')
 datalines = [line for line in f]
+py_x_data = [twos_complement(p,32) for p in datalines]
 
-py_x_data = [twos_complement(p,32) for p in datalines[:2650]]
-
-file = 'channel1_fft_imag_hex.txt'
+file = 'channel0_fft_imag_hex.txt'
 f = open(file, 'r')
 datalines = [line for line in f]
-py_y_data = [twos_complement(p,32) for p in datalines[:2560]]
+py_y_data = [twos_complement(p,32) for p in datalines]
 
 cs_f_py = [complex(c_r, c_i) for c_r, c_i in zip(py_x_data, py_y_data)]
+
+# ------ COMPARE ------
 diffx = []
 diffy = []
-# let's shift to remove 0s
-for i in range(len(cs_f_py)):
-    thedx = (np.abs(py_x_data[i])) - (np.abs(fpga_x_data[i]))
-    thedy = (np.abs(py_y_data[i])) - (np.abs(fpga_y_data[i]))
-    if fpga_x_data[i] != 0:
-        thdx = thedx / (np.abs(fpga_x_data[i]))
-    else:
-        thdx = 0
-    if fpga_y_data[i] != 0:
-        thdy = thedy / (np.abs(fpga_y_data[i]))
-    else:
-        thdy = 0
-    diffx.append(thdx)
-    diffy.append(thdy)
 
-plt.plot(diffx,'.',label='x')
-plt.plot(diffy,'.',label='y')
-plt.legend()
+for i in range(len(fpga_x_data)):
+
+    #if np.sign(py_y_data[i]) == np.sign(fpga_y_data[i]):
+    dx = np.abs(py_x_data[i]) - np.abs(fpga_x_data[i])
+    dy = np.abs(py_y_data[i]) - np.abs(fpga_y_data[i])
+
+    if fpga_x_data[i] == 0 or fpga_y_data[i] == 0:
+        diffx.append(dx / (1+np.abs(fpga_x_data[i])))
+        diffy.append(dy / (1+np.abs(fpga_y_data[i])))
+    else:
+        diffx.append(dx / np.abs(fpga_x_data[i]))
+        diffy.append(dy / np.abs(fpga_y_data[i]))
+
+fs = 131072. 
+nFFT = 1024
+
+#plt.plot(diffx,'.',label='x')
+#plt.plot(diffy,'.',label='y')
+#plt.legend()
+#plt.show()
+#plt.close()
+center_freqs = [fs/nFFT * ff for ff in np.arange(1, 513)]
+plt.semilogy(center_freqs,np.abs(cs_f_py[:512]))
+plt.semilogy(center_freqs,np.abs(cs_f_fpga[:512]))
 plt.show()
-plt.close()
-print(max(diffx))
-print(max(diffy))
-indx = diffx.index(max(diffx))
-indy = diffy.index(max(diffy))
-print(indx)
-print(indy)
-
-print(py_x_data[indx], fpga_x_data[indx])
-print(py_y_data[indy], fpga_y_data[indy])
 
 """
 the_x_diff = [(np.abs(fi) - np.abs(pi))/np.abs(fi) for fi, pi in zip(fpga_x_data, py_x_data)]
