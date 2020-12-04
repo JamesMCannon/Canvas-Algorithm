@@ -118,20 +118,19 @@ def power_xspectra(c1, c2):
 
 
 # ----------------------- Average Frequency Domain Data in Time ------------------------
-def time_avg(P, nFFT, fs, nsec): # input power array
-
-    # scalar representing number of time points for one second
-    accumulate_t = int(nsec * fs/(nFFT/2))
+def time_avg(P, nFFT, fs, acc_fft): # input power array 
+    #-- NEED TO INCLUDE HANDLING FOR NON INT MULTIPLES OF acc_fft
 
     # loop through each time point
     P_avg = []
 
     # for every chunk of time points
-    for t in range(0, len(P), accumulate_t):
-        
-        # accumulate for one second and save it
-        P_seg = P[t:accumulate_t+t]
-        P_avg.append(sum(P_seg) / len(P_seg))
+    for t in range(0, len(P), acc_fft):
+        P_seg = P[t:acc_fft+t]
+        psum = np.zeros_like(P_seg[0]) # make array of 0s
+        for ps in P_seg: # accumulate 
+            psum += np.array(ps)
+        P_avg.append(psum / len(P_seg)) # average! -- now an array 
 
     return P_avg # return size i x j where i = seconds and j = nFFT
 # ------------------------------------------------------------------------------------
@@ -171,6 +170,8 @@ def rebin_canvas(P, fbins, center_freqs): # input power vec, canvas fbins, fft f
 
         # add final list of rebinned power for that time point
         rebinned_power.append(rebinned_tp)
+
+    print(np.shape(rebinned_power))
 
     return rebinned_power # return size i x j where i = seconds and j = len of fbins
 # ------------------------------------------------------------------------------------

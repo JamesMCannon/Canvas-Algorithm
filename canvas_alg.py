@@ -3,36 +3,36 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import datetime as dt
-from scipy.fftpack import fft, fftfreq, fftshift
 from canvas_alg_helper_funcs import get_vlfdata, resample, get_win, power_spectra, rebin_canvas, power_xspectra, time_avg, twos_complement  
 
 # ----------------------------- Create a Test Signal ------------------------------- 
 # create time domain data
 fs = 131072.                           # sampling freq. 
-sample_len = 10*(2**(-8))               # seconds
+sample_len = 1024*24/fs                # seconds
 t_vec = np.linspace(0, sample_len, num=int(fs*sample_len))   # create time vec
 signal_freq1 = 8.3e3                     # signal freq. 1
-signal_freq2 = 25.2e3                     # signal freq. 2
-amp = 249.                             # signal amplitude -- SIGNED 
+signal_freq2 = 14.7e3                     # signal freq. 2
+amp = 346.                             # signal amplitude -- SIGNED 16 BIT 
 
 # add white noise with spectral density comprable to expected senisitivity for E or B
 # leakage in TX bins from 25.2e3 -- look at width of fft limit 
 
 # channels (ex, ey, bx, by, bz)
-# shift = np.pi/2  # shift between 2 channels                       
+shift = 23*np.pi/180  # shift between 2 channels                       
 
 bx = amp * np.sin(signal_freq1 * 2 * np.pi * t_vec)
-by = amp * np.sin(signal_freq2 * 2 * np.pi * t_vec)
+by = amp * np.sin(signal_freq2 * 2 * np.pi * t_vec - shift)
 
 # make an integer
 bx = [round(bxx,0) for bxx in bx]
 by = [round(byy,0) for byy in by]
 
 # collect time domain channels here
-channels_td = [bx]
+channels_td = [bx, by]
 
-do_plots = True
-save_output = True
+do_plots = False
+save_output = False
+out_folder = 'output' # make sure to clear output or make a new folder each time!
 
 # -----------------------------check input signal------------------------------------
 plt_chk = 1024
@@ -46,10 +46,10 @@ if do_plots:
 # cast input (ints) to 16bit int represented in hex
 if save_output:
     for ci, c in enumerate(channels_td):
-        with open('channel'+str(ci)+'_input_hex.txt', 'w') as output:
+        with open(out_folder+'/channel'+str(ci)+'_input_hex.txt', 'w') as output:
             for b in c:
                 output.write(format(np.int16(b) & 0xffff, '04X') + '\n')
-        with open('channel'+str(ci)+'_input_int.txt', 'w') as output:
+        with open(out_folder+'/channel'+str(ci)+'_input_int.txt', 'w') as output:
             for b in c:
                 output.write(str(np.int16(b))+'\n')
 
@@ -81,7 +81,7 @@ win = get_win(nFFT) # need to confirm bit output here
 # -----------------------------check input window------------------------------------
 if save_output:
     # cast input (ints) to 16bit int represented in hex
-    with open('window.txt', 'w') as output:
+    with open(out_folder+'/window.txt', 'w') as output:
         for w in win:
             output.write(str(np.uint16(w))+'\n')
 if do_plots:
@@ -117,11 +117,11 @@ for ci, c in enumerate(channels_td):
 
         # mutitply elementwise by windowing func
         cs_2 = np.array(cs_2)
-        cs_win = np.multiply(win, cs_2) # should be integer (with max 2^31-1)
+        cs_win = np.multiply(win, cs_2) # should be integer (with max 2^31-1) -- SIGNED 32 BIT
 
         # ---------------------------check win * input---------------------------------
         if save_output:
-            with open('channel'+str(ci)+'_win.txt', 'a') as output:
+            with open(out_folder+'/channel'+str(ci)+'_win.txt', 'a') as output:
                 for csw in cs_win:
                     output.write(str(np.int32(csw))+'\n')
 
@@ -141,7 +141,7 @@ for ci, c in enumerate(channels_td):
         cs_f = cs_f / nFFT
 
         # convert real and imag to int
-        # only need first half (match IDL/FPGA)
+        # only need first half (match IDL/FPGA) -- signed 32 bit output
         cs_f_r = [round(np.real(c_r)) for c_r in cs_f[:nFFT//2]]
         cs_f_i = [round(np.imag(c_i)) for c_i in cs_f[:nFFT//2]]
 
@@ -150,19 +150,19 @@ for ci, c in enumerate(channels_td):
 
         # ---------------------------check FFT ----------------------------------- 
         if save_output:
-            with open('channel'+str(ci)+'_fft_real_hex.txt', 'a') as output:
+            with open(out_folder+'/channel'+str(ci)+'_fft_real_hex.txt', 'a') as output:
                 for c_r in cs_f_r:
                     output.write(format(np.int32(c_r) & 0xffffffff, '08X') + '\n')
 
-            with open('channel'+str(ci)+'_fft_imag_hex.txt', 'a') as output:
+            with open(out_folder+'/channel'+str(ci)+'_fft_imag_hex.txt', 'a') as output:
                 for c_i in cs_f_i:
                     output.write(format(np.int32(c_i) & 0xffffffff, '08X') + '\n')
             
-            with open('channel'+str(ci)+'_fft_real_int.txt', 'a') as output:
+            with open(out_folder+'/channel'+str(ci)+'_fft_real_int.txt', 'a') as output:
                 for c_r in cs_f_r:
                     output.write(str(np.int32(c_r))+'\n')
 
-            with open('channel'+str(ci)+'_fft_imag_int.txt', 'a') as output:
+            with open(out_folder+'/channel'+str(ci)+'_fft_imag_int.txt', 'a') as output:
                 for c_i in cs_f_i:
                     output.write(str(np.int32(c_i))+'\n')
 
@@ -183,65 +183,73 @@ for ci, c in enumerate(channels_td):
 # ------------------------------------------------------------------------------------
 
 # ------------------------------ Power Calculation -----------------------------------
-# QUESTION: c^2 in FPGA for bfield?
+# !!!!!!!!!! QUESTION: c^2 in FPGA for bfield?
 spectra = []
-xspectra = []
+xspectra_real = []
+xspectra_imag = []
 
 # loop through the channels
-for ci, c in enumerate(channels_fd): 
-    spectra.append(power_spectra(c))
+for ci, c in enumerate(channels_fd):
+    c_sp = []
+    for fi, f in enumerate(c): 
+        c_sp.append(power_spectra(f)) # now UNSIGNED 64 bit
 
-    # --------------------------check power calc-------------------------------------
-    #if do_plots:
-    #    plt.semilogy(center_freqs[1:nFFT//2], power_spectra(c)[1][1:nFFT//2])
-    #    plt.title('Power Spectra first FFT')
-    #    plt.show()
-    #    plt.close()
-  
-    #with open('channel'+str(ci+1)+'_spectra.txt', 'w') as output:
-    #    for s in power_spectra(c)[0]:
-    #        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
-    #    for s in power_spectra(c)[1]:
-    #        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
+        # --------------------------check power calc-------------------------------------
+        if fi==0 and do_plots: # plot first FFT
+            plt.semilogy(center_freqs[:nFFT//2], c_sp[0])
+            plt.title('Power Spectra first FFT')
+            plt.show()
+            plt.close()
 
-  # -------------------------------------------------------------------------------
+        if save_output:
+            with open(out_folder+'/channel'+str(ci+1)+'_spectra.txt', 'a') as output:
+                for s in c_sp:
+                    output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
+        # -------------------------------------------------------------------------------
+    spectra.append(c_sp)
 
 # loop through the channels and perform xspectra calcs
-for i in range(0,len(channels_fd)):
-    for j in range(i+1,len(channels_fd)):
-        Preal, Pimag = power_xspectra(channels_fd[i], channels_fd[j])
-        xspectra.append(Preal)
-        xspectra.append(Pimag)
+# check that we have more than 1 channel first
+if np.shape(channels_td)[0] > 1:
+    for i in range(0,len(channels_fd)):
+        for j in range(i+1,len(channels_fd)):
+            c_spx_r = []
+            c_spx_i = []
+            for x, xs in zip(channels_fd[i], channels_fd[j]):
+                Preal, Pimag = power_xspectra(x, xs)
+                c_spx_r.append(Preal)
+                c_spx_i.append(Pimag)
+            xspectra_real.append(c_spx_r)
+            xspectra_imag.append(c_spx_i)
 
 # ---------------------------------- check output ------------------------------------
-#with open('channel_xspectra_real.txt', 'w') as output:
-#    for s in xspectra[0][0]:
-#        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
-#    for s in xspectra[0][1]:
-#        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
-#with open('channel_xspectra_imag.txt', 'w') as output:
-#    for s in xspectra[1][0]:
-#        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
-#    for s in xspectra[1][1]:
-#        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
+if save_output: # should I plot too?
+    for ci, (sr,si) in enumerate(zip(xspectra_real, xspectra_imag)): 
+        # these will just be numbered as 1, 2, 3 ... -- going to need more specificity here
+        for rl, im in zip(sr,si): 
+            with open(out_folder+'/'+str(ci)+'_xspectra_real.txt', 'a') as output:
+                for s in rl:
+                    output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
+            with open(out_folder+'/'+str(ci)+'_xspectra_imag.txt', 'a') as output:
+                for s in im:
+                    output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
 # ------------------------------------------------------------------------------------  
 
 # -------------------------------------- Time Avg ------------------------------------
 # time average for each spectra and cross spectra
-nsec = 1 # len of time to accumulate for
-spectra_tavg = [time_avg(s, nFFT, fs, nsec) for s in spectra]
-xspectra_tavg = [time_avg(xs, nFFT, fs, nsec) for xs in xspectra]
+acc_fft = 8 # how many FFTs to accumulate? 256 = 1 second
 
-# need to convert to int here! (floor)
+spectra_tavg = [time_avg(s, nFFT, fs, acc_fft) for s in spectra]
+xspectra_real_tavg = [time_avg(xs, nFFT, fs, acc_fft) for xs in xspectra_real]
+xspectra_imag_tavg = [time_avg(xs, nFFT, fs, acc_fft) for xs in xspectra_imag]
 
 if do_plots:
     for st in spectra_tavg:
-        plt.semilogy(center_freqs[1:nFFT//2], st[0][1:nFFT//2])
+        plt.semilogy(center_freqs[:nFFT//2], st[0])
         plt.title('After averaging in time - first second')
         plt.show()
         plt.close()
 # ------------------------------------------------------------------------------------ 
-
 
 # ---------------------------- Rebin into CANVAS bins ---------------------------------
 # parse text file with canvas bins
@@ -262,11 +270,13 @@ tx_fbins = [item for sublist in TX_fbins_dbl for item in sublist]
 
 # rebin to get average for canvas fbins from the time averaged spectra and xspecrta
 spectra_favg = [rebin_canvas(s, c_fbins, center_freqs) for s in spectra_tavg]
-xspectra_favg = [rebin_canvas(xs, c_fbins, center_freqs) for xs in xspectra_tavg]
+xspectra_real_favg = [rebin_canvas(xs, c_fbins, center_freqs) for xs in xspectra_real_tavg]
+xspectra_imag_favg = [rebin_canvas(xs, c_fbins, center_freqs) for xs in xspectra_imag_tavg]
 
 # rebin to get average for canvas VLF TX fbins from the time averaged spectra and xspecrta
 spectra_tx_favg = [rebin_canvas(s, tx_fbins, center_freqs) for s in spectra_tavg]
-xspectra_tx_favg = [rebin_canvas(xs, tx_fbins, center_freqs) for xs in xspectra_tavg]
+xspectra_tx_real_favg = [rebin_canvas(xs, tx_fbins, center_freqs) for xs in xspectra_real_tavg]
+xspectra_tx_imag_favg = [rebin_canvas(xs, tx_fbins, center_freqs) for xs in xspectra_imag_tavg]
 
 # QUESTION HOW TO ADD IN THE END??
 
@@ -285,7 +295,7 @@ if do_plots:
         plt.close()
 # ------------------------------------------------------------------------------------
 
-
+"""
 # -------------------------------- Compression ---------------------------------------
 # log 2 compression -- compressing 64 bit unsigned integer - 6 int and 6 fractional 
 spectra_compressed = [np.log2(sc) * 64 for sc in spectra_favg]
@@ -338,3 +348,4 @@ axs[1].set_xlabel('time [s]')
 plt.close()
 
 # ------------------------------------------------------------------------------------
+"""
