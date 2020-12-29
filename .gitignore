@@ -1,1 +1,6 @@
 DEMETER_data/*
+vlf_data/*
+*.txt
+*.png
+*.dat
+output/*
