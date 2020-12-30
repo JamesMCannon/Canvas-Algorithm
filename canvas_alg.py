@@ -8,11 +8,11 @@ from canvas_alg_helper_funcs import get_vlfdata, resample, get_win, power_spectr
 # ----------------------------- Create a Test Signal ------------------------------- 
 # create time domain data
 fs = 131072.                           # sampling freq. 
-sample_len = 1024*24/fs                # seconds
+sample_len = 1024*20/fs                # seconds
 t_vec = np.linspace(0, sample_len, num=int(fs*sample_len))   # create time vec
 signal_freq1 = 8.3e3                     # signal freq. 1
 signal_freq2 = 14.7e3                     # signal freq. 2
-amp = 346.                             # signal amplitude -- SIGNED 16 BIT 
+amp = 249.                             # signal amplitude -- SIGNED 16 BIT 
 
 # add white noise with spectral density comprable to expected senisitivity for E or B
 # leakage in TX bins from 25.2e3 -- look at width of fft limit 
@@ -27,11 +27,20 @@ by = amp * np.sin(signal_freq2 * 2 * np.pi * t_vec - shift)
 bx = [round(bxx,0) for bxx in bx]
 by = [round(byy,0) for byy in by]
 
+#file = 'FPGA/sample_input_loop.txt'
+#f = open(file, 'r')
+#datalines = [line for line in f]
+#fpga_in_data = [twos_complement(p,16) for p in datalines]
+#ff = []
+#for i in range(6):
+#    ff.extend(fpga_in_data)
+#bx = ff
+
 # collect time domain channels here
-channels_td = [bx, by]
+channels_td = [bx]
 
 do_plots = False
-save_output = False
+save_output = True
 out_folder = 'output' # make sure to clear output or make a new folder each time!
 
 # -----------------------------check input signal------------------------------------
@@ -182,6 +191,7 @@ for ci, c in enumerate(channels_td):
 
 # ------------------------------------------------------------------------------------
 
+
 # ------------------------------ Power Calculation -----------------------------------
 # !!!!!!!!!! QUESTION: c^2 in FPGA for bfield?
 spectra = []
@@ -202,8 +212,8 @@ for ci, c in enumerate(channels_fd):
             plt.close()
 
         if save_output:
-            with open(out_folder+'/channel'+str(ci+1)+'_spectra.txt', 'a') as output:
-                for s in c_sp:
+            with open(out_folder+'/channel'+str(ci)+'_spectra.txt', 'a') as output:
+                for s in c_sp[0]:
                     output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
         # -------------------------------------------------------------------------------
     spectra.append(c_sp)
@@ -222,18 +232,31 @@ if np.shape(channels_td)[0] > 1:
             xspectra_real.append(c_spx_r)
             xspectra_imag.append(c_spx_i)
 
-# ---------------------------------- check output ------------------------------------
-if save_output: # should I plot too?
-    for ci, (sr,si) in enumerate(zip(xspectra_real, xspectra_imag)): 
-        # these will just be numbered as 1, 2, 3 ... -- going to need more specificity here
-        for rl, im in zip(sr,si): 
-            with open(out_folder+'/'+str(ci)+'_xspectra_real.txt', 'a') as output:
-                for s in rl:
-                    output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
-            with open(out_folder+'/'+str(ci)+'_xspectra_imag.txt', 'a') as output:
-                for s in im:
-                    output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
-# ------------------------------------------------------------------------------------  
+    # ---------------------------------- check output ------------------------------------
+    if save_output: # should I plot too?
+        for ci, (sr,si) in enumerate(zip(xspectra_real, xspectra_imag)): 
+            # these will just be numbered as 1, 2, 3 ... -- going to need more specificity here
+            for rl, im in zip(sr,si): 
+                with open(out_folder+'/'+str(ci)+'_xspectra_real.txt', 'a') as output:
+                    for s in rl:
+                        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
+                with open(out_folder+'/'+str(ci)+'_xspectra_imag.txt', 'a') as output:
+                    for s in im:
+                        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
+    # ------------------------------------------------------------------------------------  
+#print(np.shape(spectra))
+# comparing FFT output
+file = 'FPGA/fbin_fft_pwr.txt'
+f = open(file, 'r')
+datalines = [line for line in f]
+fp_t = [twos_complement(p,64) for p in datalines]
+#plt.plot(np.log10(fp_t),'.')
+#plt.close()
+
+fp_chunk = [fp_t[i*512:512*(i+1)] for i in range(0,61)]
+
+spectra = []
+spectra.append(fp_chunk)
 
 # -------------------------------------- Time Avg ------------------------------------
 # time average for each spectra and cross spectra
@@ -243,13 +266,37 @@ spectra_tavg = [time_avg(s, nFFT, fs, acc_fft) for s in spectra]
 xspectra_real_tavg = [time_avg(xs, nFFT, fs, acc_fft) for xs in xspectra_real]
 xspectra_imag_tavg = [time_avg(xs, nFFT, fs, acc_fft) for xs in xspectra_imag]
 
-if do_plots:
-    for st in spectra_tavg:
-        plt.semilogy(center_freqs[:nFFT//2], st[0])
-        plt.title('After averaging in time - first second')
-        plt.show()
-        plt.close()
+for ci, c in enumerate(spectra_tavg):
+    if do_plots:
+        for st in spectra_tavg:
+            plt.semilogy(center_freqs[:nFFT//2], c[0])
+            plt.title('After averaging in time - first second')
+            plt.show()
+            plt.close()
+    if save_output:
+            with open(out_folder+'/channel'+str(ci)+'_time.txt', 'a') as output:
+                for sc in c:
+                    for s in sc:
+                        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
 # ------------------------------------------------------------------------------------ 
+
+#print(np.shape(spectra))
+# comparing FFT output
+file = 'FPGA/fbin_accum_pwr.txt'
+f = open(file, 'r')
+datalines = [line for line in f]
+fp_t = [twos_complement(p,64) for p in datalines]
+fp_t_avg = [fp_t[i:i+330] for i in range(0,2310,330)] 
+
+# compare
+py = [spectra_tavg[0][i][2:332] for i in range(0,7)]
+print(np.shape(py))
+
+for n in range(7):
+    pyd = np.array(py[n])
+    fp = np.array(fp_t_avg[n])
+    dd = pyd - fp
+    print(dd)
 
 # ---------------------------- Rebin into CANVAS bins ---------------------------------
 # parse text file with canvas bins
@@ -273,12 +320,40 @@ spectra_favg = [rebin_canvas(s, c_fbins, center_freqs) for s in spectra_tavg]
 xspectra_real_favg = [rebin_canvas(xs, c_fbins, center_freqs) for xs in xspectra_real_tavg]
 xspectra_imag_favg = [rebin_canvas(xs, c_fbins, center_freqs) for xs in xspectra_imag_tavg]
 
+
+#s = np.floor(s) # NEED TO FLOOR THE OUTPUT AFTER DIVIDE BY 8!!!!!
+
+
+""" # comparing FFT output
+fp_favg = rebin_canvas(fp, c_fbins, center_freqs)
+final_fp = [item for sublist in fp_favg for item in sublist]
+final_fp = np.array(final_fp)
+fp_last = final_fp / 8 # account for time averaging 
+
+with open(out_folder+'/'+'fpga_avg.txt', 'a') as output:
+    for s in fp_last:
+        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
+"""
 # rebin to get average for canvas VLF TX fbins from the time averaged spectra and xspecrta
 spectra_tx_favg = [rebin_canvas(s, tx_fbins, center_freqs) for s in spectra_tavg]
 xspectra_tx_real_favg = [rebin_canvas(xs, tx_fbins, center_freqs) for xs in xspectra_real_tavg]
 xspectra_tx_imag_favg = [rebin_canvas(xs, tx_fbins, center_freqs) for xs in xspectra_imag_tavg]
 
+""" # comparing FFT output
+file = 'time_bin_avg_output.txt'
+f = open(file, 'r')
+datalines = [line for line in f]
+f_a = [twos_complement(p,64) for p in datalines]
+f_a = np.array(f_a)
+
+plt.plot(f_a - fp_last)
+plt.show()
+plt.close()
+""" 
+
 # QUESTION HOW TO ADD IN THE END??
+
+# LINES UP!
 
 # parse text file with center canvas bins
 fname = 'fbins_center.txt'                                 
