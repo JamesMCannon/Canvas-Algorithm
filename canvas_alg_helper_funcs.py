@@ -130,7 +130,8 @@ def time_avg(P, nFFT, fs, acc_fft): # input power array
         psum = np.zeros_like(P_seg[0]) # make array of 0s
         for ps in P_seg: # accumulate 
             psum += np.array(ps)
-        P_avg.append(psum / len(P_seg)) # average! -- now an array 
+        #P_avg.append(np.floor(psum / len(P_seg))) # average! -- now an array 
+        P_avg.append(psum) # accummulate to compare to FFT
 
     return P_avg # return size i x j where i = seconds and j = nFFT
 # ------------------------------------------------------------------------------------
@@ -159,8 +160,10 @@ def rebin_canvas(P, fbins, center_freqs): # input power vec, canvas fbins, fft f
                 
                 if ff_val >= current_bin[0] and ff_val < current_bin[1]:
                     # append power value to list for new canvas bin
-                    newbin_power.append(p_sec[ff_ind])
-            
+       
+                    #newbin_power.append(p_sec[ff_ind])
+                    newbin_power.append(p_sec[ff_ind-1]) # for FPGA comp.
+
             # add up the values contained in canvas bin and average
             rebinned_tp.append(sum(newbin_power)/len(newbin_power))
 
@@ -170,8 +173,6 @@ def rebin_canvas(P, fbins, center_freqs): # input power vec, canvas fbins, fft f
 
         # add final list of rebinned power for that time point
         rebinned_power.append(rebinned_tp)
-
-    print(np.shape(rebinned_power))
 
     return rebinned_power # return size i x j where i = seconds and j = len of fbins
 # ------------------------------------------------------------------------------------
