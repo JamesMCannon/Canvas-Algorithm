@@ -4,3 +4,4 @@ vlf_data/*
 *.png
 *.dat
 output/*
+__pychace__/*
