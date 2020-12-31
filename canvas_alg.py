@@ -8,7 +8,7 @@ from canvas_alg_helper_funcs import get_vlfdata, resample, get_win, power_spectr
 # ----------------------------- Create a Test Signal ------------------------------- 
 # create time domain data
 fs = 131072.                           # sampling freq. 
-sample_len = 1024*20/fs                # seconds
+sample_len = 1024*5/fs                # seconds
 t_vec = np.linspace(0, sample_len, num=int(fs*sample_len))   # create time vec
 signal_freq1 = 8.3e3                     # signal freq. 1
 signal_freq2 = 14.7e3                     # signal freq. 2
@@ -41,7 +41,7 @@ channels_td = [bx]
 
 do_plots = False
 save_output = True
-out_folder = 'output' # make sure to clear output or make a new folder each time!
+out_folder = 'alg_output' # make sure to clear output or make a new folder each time!
 
 # -----------------------------check input signal------------------------------------
 plt_chk = 1024
@@ -116,8 +116,8 @@ for ci, c in enumerate(channels_td):
             c.append(0)
 
     # loop through by 512
-    for i in range(0, len(c), nFFT//2):
-    #for i in range(0, len(c), nFFT): # for no overlap
+    #for i in range(0, len(c), nFFT//2):
+    for i in range(0, len(c), nFFT): # for no overlap
         cs_2 = c[i:i+nFFT]
 
         # this is handling the LAST FFT with overlap and padding with 0's
@@ -273,39 +273,34 @@ for ci, c in enumerate(spectra_tavg):
             plt.title('After averaging in time - first second')
             plt.show()
             plt.close()
-    if save_output:
-            with open(out_folder+'/channel'+str(ci)+'_time.txt', 'a') as output:
-                for sc in c:
-                    for s in sc:
-                        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
 # ------------------------------------------------------------------------------------ 
 
 #print(np.shape(spectra))
 # comparing FFT output
-file = 'FPGA/fbin_accum_pwr.txt'
-f = open(file, 'r')
-datalines = [line for line in f]
-fp_t = [twos_complement(p,64) for p in datalines]
-fp_t_avg = [fp_t[i:i+330] for i in range(0,2310,330)] 
+#file = 'FPGA/fbin_accum_pwr.txt'
+#f = open(file, 'r')
+#datalines = [line for line in f]
+#fp_t = [twos_complement(p,64) for p in datalines]
+#fp_t_avg = [fp_t[i:i+330] for i in range(0,2310,330)] 
 
 # compare
-py = [spectra_tavg[0][i][2:332] for i in range(0,7)]
-print(np.shape(py))
+#py = [spectra_tavg[0][i][2:332] for i in range(0,7)]
+#print(np.shape(py))
 
-for n in range(7):
-    pyd = np.array(py[n])
-    fp = np.array(fp_t_avg[n])
-    dd = pyd - fp
-    print(dd)
+#for n in range(7):
+#     pyd = np.array(py[n])
+#     fp = np.array(fp_t_avg[n])
+#    dd = pyd - fp
+#    print(dd)
 
 # ---------------------------- Rebin into CANVAS bins ---------------------------------
 # parse text file with canvas bins
-fname = 'fbins.txt'                                 
+fname = 'CANVAS_fbins/fbins.txt'                                 
 fbins_str = np.genfromtxt(fname, dtype='str') 
 fbins_dbl = [(float(f[0].replace(',','')),float(f[1].replace(',',''))) for f in fbins_str]
 
 # parse text file with VLF TX canvas bins
-fname = 'tx_fbins.txt'                                 
+fname = 'CANVAS_fbins/tx_fbins.txt'                                 
 TX_fbins_str = np.genfromtxt(fname, dtype='str') 
 TX_fbins_cen = [(float(f[3:].replace(',','')))*1e3 for f in TX_fbins_str]
 TX_fbins_names = [TXn[:3] for TXn in TX_fbins_str]
@@ -320,20 +315,24 @@ spectra_favg = [rebin_canvas(s, c_fbins, center_freqs) for s in spectra_tavg]
 xspectra_real_favg = [rebin_canvas(xs, c_fbins, center_freqs) for xs in xspectra_real_tavg]
 xspectra_imag_favg = [rebin_canvas(xs, c_fbins, center_freqs) for xs in xspectra_imag_tavg]
 
-
+if save_output:
+        with open(out_folder+'/channel'+str(ci)+'_time.txt', 'a') as output:
+            for sc in spectra_favg[0]:
+                for s in sc:
+                    output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
 #s = np.floor(s) # NEED TO FLOOR THE OUTPUT AFTER DIVIDE BY 8!!!!!
 
 
-""" # comparing FFT output
-fp_favg = rebin_canvas(fp, c_fbins, center_freqs)
-final_fp = [item for sublist in fp_favg for item in sublist]
-final_fp = np.array(final_fp)
-fp_last = final_fp / 8 # account for time averaging 
+# comparing FFT output
+#fp_favg = rebin_canvas(fp, c_fbins, center_freqs)
+#final_fp = [item for sublist in fp_favg for item in sublist]
+#final_fp = np.array(final_fp)
+#fp_last = final_fp / 8 # account for time averaging 
 
-with open(out_folder+'/'+'fpga_avg.txt', 'a') as output:
-    for s in fp_last:
-        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
-"""
+#with open(out_folder+'/'+'fpga_avg.txt', 'a') as output:
+#    for s in fp_last:
+#        output.write(format(np.uint64(s) & 0xffffffffffffffff, '016X') + '\n')
+
 # rebin to get average for canvas VLF TX fbins from the time averaged spectra and xspecrta
 spectra_tx_favg = [rebin_canvas(s, tx_fbins, center_freqs) for s in spectra_tavg]
 xspectra_tx_real_favg = [rebin_canvas(xs, tx_fbins, center_freqs) for xs in xspectra_real_tavg]
@@ -356,7 +355,7 @@ plt.close()
 # LINES UP!
 
 # parse text file with center canvas bins
-fname = 'fbins_center.txt'                                 
+fname = 'CANVAS_fbins/fbins_center.txt'                                 
 fbins_c_str = np.genfromtxt(fname, dtype='str') 
 fbins_center = [(float(f.replace(',',''))) for f in fbins_c_str]
 

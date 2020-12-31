@@ -7,6 +7,8 @@ import os
 import pandas as pd
 import datetime as dt
  
+# just getting sampling working for VLF data from table mtn
+
 # import constants
 c = 2.998e8 # m/s 
 

@@ -130,8 +130,8 @@ def time_avg(P, nFFT, fs, acc_fft): # input power array
         psum = np.zeros_like(P_seg[0]) # make array of 0s
         for ps in P_seg: # accumulate 
             psum += np.array(ps)
-        #P_avg.append(np.floor(psum / len(P_seg))) # average! -- now an array 
-        P_avg.append(psum) # accummulate to compare to FFT
+        P_avg.append(np.floor(psum / len(P_seg))) # average! -- now an array 
+        #P_avg.append(psum) # accummulate to compare to FFT
 
     return P_avg # return size i x j where i = seconds and j = nFFT
 # ------------------------------------------------------------------------------------
