@@ -58,10 +58,14 @@ def quick_compare(py_array, fp_array, vals, show_plots=False):
     diff = (py_array - fp_array)
 
     if show_plots:
-        plt.plot(diff[:vals],'-')
+        plt.plot(diff[:vals],'.')
         plt.title('difference in arrays - ' + str(vals) + ' vals')
         plt.show()
         plt.close()
 
     return diff
 # ------------------------------------------------------------------------------------
+
+def flatten(mylist):
+    flat_list = [item for sublist in mylist for item in sublist]
+    return flat_list

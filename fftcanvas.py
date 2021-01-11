@@ -50,7 +50,7 @@ def canvas_fft(nFFT, fs, win, channels_td, overlap=True, show_plots=False, save_
             # ----------------------------------------------------------------------------
 
             # take FFT
-            cs_f = np.fft.fft(cs_win)
+            cs_f = np.fft.rfft(cs_win)
 
             # make it match IDL
             cs_f = cs_f / nFFT

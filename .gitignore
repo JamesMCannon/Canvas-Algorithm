@@ -5,3 +5,5 @@ vlf_data/*
 *.dat
 output/*
 __pychace__/*
+payload/pyglow/*
+payload/pyld_env/*

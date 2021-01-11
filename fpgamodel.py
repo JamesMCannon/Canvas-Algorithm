@@ -2,8 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import glob
+import math
 
-from readFPGA import read_FPGA_input, read_INT_input, quick_compare
+from readFPGA import read_FPGA_input, read_INT_input, quick_compare, flatten, twos_complement
 from inputstimulus import test_signal
 from win import get_win
 from fftcanvas import canvas_fft
@@ -25,7 +26,7 @@ n_acc = 8
 files = glob.glob('output/*')
 for f in files:
     os.remove(f)
-
+"""
 # STEP 1 -------------------- GENERATE INPUT ----------------------------- 
 channels_td = test_signal(fs, sample_len, [signal_freq1], [amp], show_plots=False, save_output=None)
 
@@ -41,6 +42,9 @@ channels_fd_real, channels_fd_imag = canvas_fft(nFFT, fs, win, channels_td, over
 # or get fft from FPGA -- 
 fpga_r = read_FPGA_input('FPGA/fbin_fft_real.txt', 32, signed=True, show_plots=False)
 fpga_i = read_FPGA_input('FPGA/fbin_fft_imgry.txt', 32, signed=True, show_plots=False)
+
+py = flatten(channels_fd_real[0])
+#diff = quick_compare(np.abs(py[:len(fpga_r)]), np.abs(fpga_r), 512, show_plots=True)
 
 channels_fd_real = [[fpga_r[i:i+512] for i in range(0,len(fpga_r),512)]]
 channels_fd_imag = [[fpga_i[i:i+512] for i in range(0,len(fpga_r),512)]]
@@ -60,8 +64,18 @@ c_fbins = [item for sublist in fbins_dbl for item in sublist]
 center_freqs = [fs/nFFT * ff for ff in np.arange(0, 512)]
 
 avg_pwr = rebin_canvas(acc_pwr, n_acc, c_fbins, center_freqs, show_plots=False, save_output='both')
-
+"""
 # STEP 6 ------------------------ compress ---------------------------------
-fpga_p = read_FPGA_input('FPGA/log2_output.txt', 8, signed=False, show_plots=False)
+#fpga_p = read_FPGA_input('FPGA/log2_output.txt', 8, signed=False, show_plots=False)
+
+f = open('FPGA/log2_io_sweep.txt', 'r')
+datalines = [line.strip() for line in f]
+output_val = [int(line[-3:],16) for line in datalines]
+input_val = [int(line[:-4].strip(),16) for line in datalines]
+
+cmprs_val = [round(math.log2(iv)*64) for iv in input_val[1:]]
+#print(cmprs_val[1], output_val[2])
+diff = quick_compare(output_val[1:], cmprs_val, len(cmprs_val)//4, show_plots=True)
+
 
 # need to clean up the plots and a few other functions
