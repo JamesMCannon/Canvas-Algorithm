@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import numpy as np
+from matplotlib import cm
 
 import pyglow
 from skyfield.api import EarthSatellite
@@ -119,9 +120,9 @@ alt = 500 # km
 # for earth rotation
 eph = load('de421.bsp')
 
-min_to_do = 60*24*180
+min_to_do = 60
 # propagate every minute
-for n in range(0,min_to_do,5):
+for n in range(0,min_to_do,1):
     nm = timedelta(minutes=n)
     cdate = st_date + nm
     t = ts.utc(cdate.year, cdate.month, cdate.day, cdate.hour, cdate.minute, 0)
@@ -187,6 +188,10 @@ def find_fc(ne_atpos, te_atpos):
 
     return fc/1e3 
 
+#pt = pyglow.Point(cdate, -45, 90, 500)
+#pt.run_iri()  
+#print(find_fc(pt.ne*1e3, pt.Te)) 
+
 # use cartopy plot
 projection = ccrs.PlateCarree()
 axes_class = (GeoAxes,
@@ -236,7 +241,9 @@ for j in range(np.shape(H)[0]):
 
         fc_grid_day[j,k] = find_fc(ne_grid_day[j,k], te_grid_day[j,k])
 
-p = axgr[0].pcolormesh(X, Y, fc_grid_day.T, cmap = 'plasma',vmin=5,vmax=300)
+#p = axgr[0].pcolormesh(X, Y, fc_grid_day.T, cmap = 'plasma',vmin=10,vmax=200)
+levels = np.linspace(10,100,num=9)
+p = axgr[0].contourf(X[:-1,:-1], Y[:-1,:-1], fc_grid_day.T, levels, cmap=cm.coolwarm, extend='max')
 
 
 # repeat for night
@@ -265,12 +272,26 @@ for j in range(np.shape(H)[0]):
 
         fc_grid_night[j,k] = find_fc(ne_grid_night[j,k], te_grid_night[j,k])
 
-p = axgr[1].pcolormesh(X, Y, fc_grid_night.T, cmap = 'plasma',vmin=5,vmax=300)
-
+#p = axgr[1].pcolormesh(X, Y, fc_grid_night.T, cmap = 'plasma',vmin=20,vmax=120)
+p = axgr[1].contourf(X[:-1,:-1], Y[:-1,:-1], fc_grid_night.T, levels, cmap=cm.coolwarm, extend='max')
 
 # formatting
 axgr.cbar_axes[0].colorbar(p)
 axgr[0].set_title('Sunlit')
 axgr[1].set_title('Shadow')
-plt.savefig('avg_fc.png')
+#plt.savefig('avg_fc.png')
+plt.close()
+
+# plot capacitive gain region
+cl = np.linspace(10,50,num=100)
+cs = 6.
+cg = cs/(cs+cl)
+plt.plot(cl,cg)
+plt.hlines(0.20, 10, 24, colors='r', linestyles='dashed',label='cl 24pF')
+plt.hlines(0.15, 10, 34, colors='g', linestyles='dashed',label='cl 34pF')
+plt.xlabel('load capacitance pF')
+plt.ylabel('capacitive gain')
+plt.legend()
+plt.title('Capacitve Gain vs Load Capacitance for fc < 40kHz')
+plt.savefig('cgain.png')
 plt.close()

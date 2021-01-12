@@ -51,7 +51,7 @@ def read_INT_input(file, show_plots=False):
 # ------------------------------------------------------------------------------------
 
 # ---------------------------- quick compare ---------------------------------------
-def quick_compare(py_array, fp_array, vals, show_plots=False):
+def quick_compare(py_array, fp_array, vals, title, show_plots=False):
     py_array = np.array(py_array)
     fp_array = np.array(fp_array)
     
@@ -59,8 +59,8 @@ def quick_compare(py_array, fp_array, vals, show_plots=False):
 
     if show_plots:
         plt.plot(diff[:vals],'.')
-        plt.title('difference in arrays - ' + str(vals) + ' vals')
-        plt.show()
+        plt.title(title)
+        plt.savefig(title+'.png')
         plt.close()
 
     return diff
