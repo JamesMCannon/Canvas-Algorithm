@@ -7,6 +7,8 @@ import os
 import datetime as dt
 
 from saveas import save_output_txt
+from scipy.signal import chirp
+from scipy import signal
 
 # ---------------------------- Get VLF Data Table Mtn ------------------------------
 def get_vlfdata(datadir): # directory of data
@@ -72,10 +74,11 @@ def test_signal(fs, sample_len, freqs, amps, shift=None, show_plots=False, save_
     channels_td_raw = []
     for i, (f, a) in enumerate(zip(freqs, amps)):
         if shift:
+            #if i == 0:
+            #    channels_td_raw.append(a * np.sin(f * 2 * np.pi * t_vec))
             if i == 0:
-                channels_td_raw.append(a * np.sin(f * 2 * np.pi * t_vec))
-            if i > 0:
-                channels_td_raw.append(a * np.sin(f * 2 * np.pi * t_vec + shift[i-1]))
+                print('shifting')
+                channels_td_raw.append(a * np.sin(f * 2 * np.pi * t_vec + shift))
         else:
             channels_td_raw.append(a * np.sin(f * 2 * np.pi * t_vec))
 
@@ -95,7 +98,65 @@ def test_signal(fs, sample_len, freqs, amps, shift=None, show_plots=False, save_
     # cast input (ints) to 16bit int represented in hex or integers
     for ci, c in enumerate(channels_td):
         if save_output:
-            out_path = out_folder+'/channel'+str(ci)+'_input'
+            out_path = out_folder+'/channel'+str(ci)+'_input_'+str(freqs[0]/1e3)+'_'+str(round(shift,2))
             save_output_txt(c, out_path, save_output, 's-16')
     return channels_td
 # ------------------------------------------------------------------------------------
+
+def input_chirp(fs, sample_len, f0, f1, amp, show_plots=True, save_output='both', out_folder='output'):
+    # create time domain data
+    t_vec = np.linspace(0, sample_len, num=int(fs*sample_len))   # create time vec
+    
+    channels_td_raw = []
+    channels_td_raw.append(amp * chirp(t_vec, f0=f0, f1=f1, t1=0.1, method='linear'))
+
+    channels_td = [] # rounded to be 16 bit signed input
+    for ctd in channels_td_raw:
+        cx = [round(c,0) for c in ctd]
+        channels_td.append(cx)
+
+    if show_plots:
+        plt_chk = 1024
+        for ch in channels_td:
+            plt.plot(t_vec[:plt_chk], ch[:plt_chk])
+        plt.title('Input Signal - first 1024')
+        plt.show()
+        plt.close()
+
+    # cast input (ints) to 16bit int represented in hex or integers
+    for ci, c in enumerate(channels_td):
+        if save_output:
+            out_path = out_folder+'/chirp'
+            save_output_txt(c, out_path, save_output, 's-16')
+    return channels_td
+
+# ------------------------------------------------------------------------------------
+
+def white_noise(fs, sample_len, amp, show_plots=True, save_output='both', out_folder='output'):
+    # create time domain data
+    t_vec = np.linspace(0, sample_len, num=int(fs*sample_len))   # create time vec
+    
+    channels_td_raw = []
+
+    noise = amp*np.random.normal(0, .1, t_vec.shape)
+    channels_td_raw.append(noise)
+
+    channels_td = [] # rounded to be 16 bit signed input
+    for ctd in channels_td_raw:
+        cx = [round(c,0) for c in ctd]
+        channels_td.append(cx)
+
+    if show_plots:
+        plt_chk = 1024
+        for ch in channels_td:
+            plt.plot(t_vec[:plt_chk], ch[:plt_chk])
+        plt.title('Input Signal - first 1024')
+        plt.show()
+        plt.close()
+
+    # cast input (ints) to 16bit int represented in hex or integers
+    for ci, c in enumerate(channels_td):
+        if save_output:
+            out_path = out_folder+'/white_noise'
+            save_output_txt(c, out_path, save_output, 's-16')
+    return channels_td

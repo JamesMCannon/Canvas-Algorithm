@@ -11,7 +11,7 @@ def canvas_fft(nFFT, fs, win, channels_td, overlap=True, show_plots=False, save_
 
     for ci, c in enumerate(channels_td):
 
-        c_fd_r = [] # store each segment of channel f domain
+        c_fd_r = [] # store channel f domain
         c_fd_i = [] 
 
         # first, handle any channels that aren't nFFT*n points in length
@@ -32,6 +32,7 @@ def canvas_fft(nFFT, fs, win, channels_td, overlap=True, show_plots=False, save_
             # this is handling the LAST FFT with overlap and padding with 0's
             if len(cs_2) != nFFT:
                 cs_2.extend(np.zeros(nFFT//2))
+                print('padded last FFT w zeros')
 
             # mutitply elementwise by windowing func
             cs_2 = np.array(cs_2)
@@ -50,7 +51,7 @@ def canvas_fft(nFFT, fs, win, channels_td, overlap=True, show_plots=False, save_
             # ----------------------------------------------------------------------------
 
             # take FFT
-            cs_f = np.fft.rfft(cs_win)
+            cs_f = np.fft.fft(cs_win)
 
             # make it match IDL
             cs_f = cs_f / nFFT
