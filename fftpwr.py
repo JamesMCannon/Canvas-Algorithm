@@ -45,7 +45,7 @@ def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, show
     # diff channel: R = real1*real2 + imag1*imag2 , I = real1*imag2 - real2*imag1
     for ind, (r1, i1, r2, i2) in enumerate(zip(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data)):
         xspec_pwr_r[ind] = r1 * r2 + i1 * i2
-        xspec_pwr_i[ind] = r1 * i2 - r2 * i1
+        xspec_pwr_i[ind] = r2 * i1 + (r1 * i2)
 
     if show_plots:
         plt.plot(np.log10(xspec_pwr_r),'.',label='real')
@@ -56,9 +56,9 @@ def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, show
         plt.close()
 
     if save_output:
-        out_path = out_folder+'/channel'+str(ci)+'_xspectra_real'
+        out_path = out_folder+'/channel01_xspectra_real'
         save_output_txt(xspec_pwr_r, out_path, save_output, 'u-64')
-        out_path = out_folder+'/channel'+str(ci)+'_xspectra_imag'
+        out_path = out_folder+'/channel01_xspectra_imag'
         save_output_txt(xspec_pwr_i, out_path, save_output, 'u-64')
 
     return xspec_pwr_r, xspec_pwr_i

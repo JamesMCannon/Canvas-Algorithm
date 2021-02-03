@@ -51,24 +51,28 @@ def read_INT_input(file, show_plots=False):
 # ------------------------------------------------------------------------------------
 
 # ---------------------------- quick compare ---------------------------------------
-def quick_compare(py_array, fp_array, vals, title, show_plots=False):
+def quick_compare(py_array, fp_array, vals, show_plots=False):
     py_array = np.array(py_array)
     fp_array = np.array(fp_array)
 
-    diff = (py_array - fp_array)/py_array
+    diff = (py_array - fp_array)
+    #for bin, (py, fp) in enumerate(zip(py_array[:vals], fp_array[:vals])):
+    #    print(bin, py, fp)
     
     if show_plots:
-        plt.plot(np.linspace(236,276,num=40), np.sign(fp_array[236:vals]),color='cyan', marker='s', linestyle='', label='fpga')
-        plt.plot(np.linspace(236,276,num=40), np.sign(py_array[236:vals]),color='red', marker='+', linestyle='', label='python')
-        plt.legend()
-        plt.ylabel('sign')
-        plt.xlabel('bin #')
-        plt.title(title)
+        plt.plot(diff)
+        #plt.plot(np.linspace(0,vals,num=vals), np.sign(fp_array[:vals]),color='cyan', marker='s', linestyle='', label='fpga')
+        #plt.plot(np.linspace(0,vals,num=vals), np.sign(py_array[:vals]),color='red', marker='+', linestyle='', label='python')
+        #plt.legend()
+        #plt.ylabel('sign')
+        #plt.xlabel('bin #')
+        #plt.title(title)
         #plt.show()
-        plt.savefig('plots_1_20/'+title+'_sign_comp_fix.png')
+        #plt.savefig(title+'_sign_comp_fix.png')
+        plt.show()
         plt.close()
 
-    return diff
+    return
 # ------------------------------------------------------------------------------------
 
 def flatten(mylist):
@@ -145,3 +149,28 @@ def read_FPGA_input_2line(file, b, signed=True, show_plots=False):
     print('reading FPGA input \n file length is: ', len(fpga_in_data))
 
     return fpga_in_data
+
+def read_FPGA_input_7line(file, b, signed=True, show_plots=False):
+    f = open(file, 'r')
+    datalines = [line.split() for line in f]
+    datalines = flatten(datalines)
+    datalines = datalines[7:]
+    if signed:
+        fpga_in_data = [twos_complement(p,b) for p in datalines]
+    else:
+        fpga_in_data = [int(p,16) for p in datalines]
+
+    f.close()
+
+    if show_plots:
+        plt.plot(fpga_in_data[:1024],'-')
+        plt.show()
+        plt.title(file)
+        plt.close()
+
+    print('reading FPGA input \n file length is: ', len(fpga_in_data))
+
+    xspec_real = [fpga_in_data[n] for n in range(5,len(fpga_in_data),7)]
+    xspec_imag = [fpga_in_data[n] for n in range(6,len(fpga_in_data),7)]
+
+    return xspec_real, xspec_imag
