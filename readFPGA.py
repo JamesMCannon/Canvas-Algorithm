@@ -129,32 +129,13 @@ def read_FPGA_fft_debug(file, b, signed):
     
 # ------------------------------------------------------------------------------------ 
 
-def read_FPGA_input_2line(file, b, signed=True, show_plots=False):
+# ------------------------------------------------------------------------------------ 
+
+def read_FPGA_input_lines(file, b, line_n, x, y, signed=True, show_plots=False):
     f = open(file, 'r')
     datalines = [line.split() for line in f]
     datalines = flatten(datalines)
-    if signed:
-        fpga_in_data = [twos_complement(p,b) for p in datalines]
-    else:
-        fpga_in_data = [int(p,16) for p in datalines]
-
-    f.close()
-
-    if show_plots:
-        plt.plot(fpga_in_data[:1024],'-')
-        plt.show()
-        #plt.title(file)
-        plt.close()
-
-    print('reading FPGA input \n file length is: ', len(fpga_in_data))
-
-    return fpga_in_data
-
-def read_FPGA_input_7line(file, b, signed=True, show_plots=False):
-    f = open(file, 'r')
-    datalines = [line.split() for line in f]
-    datalines = flatten(datalines)
-    datalines = datalines[7:]
+    datalines = datalines[line_n:]
     if signed:
         fpga_in_data = [twos_complement(p,b) for p in datalines]
     else:
@@ -170,7 +151,7 @@ def read_FPGA_input_7line(file, b, signed=True, show_plots=False):
 
     print('reading FPGA input \n file length is: ', len(fpga_in_data))
 
-    xspec_real = [fpga_in_data[n] for n in range(5,len(fpga_in_data),7)]
-    xspec_imag = [fpga_in_data[n] for n in range(6,len(fpga_in_data),7)]
+    d1 = [fpga_in_data[n] for n in range(x,len(fpga_in_data),line_n)]
+    d2 = [fpga_in_data[n] for n in range(y,len(fpga_in_data),line_n)]
 
-    return xspec_real, xspec_imag
+    return d1, d2

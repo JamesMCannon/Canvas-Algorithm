@@ -45,7 +45,7 @@ def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, show
     # diff channel: R = real1*real2 + imag1*imag2 , I = real1*imag2 - real2*imag1
     for ind, (r1, i1, r2, i2) in enumerate(zip(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data)):
         xspec_pwr_r[ind] = r1 * r2 + i1 * i2
-        xspec_pwr_i[ind] = r2 * i1 + (r1 * i2)
+        xspec_pwr_i[ind] = r2 * i1 - (r1 * i2)
 
     if show_plots:
         plt.plot(np.log10(xspec_pwr_r),'.',label='real')
