@@ -14,24 +14,23 @@ def fft_spec_power(real_data, imag_data, show_plots=False, save_output='both', o
 
     spec_pwr = np.zeros_like(real_data)
 
-    for k, (cr, ci) in enumerate(zip(real_data, imag_data)):
-        for ind, (r,i) in enumerate(zip(cr, ci)):
-            r = np.array(r)
-            i = np.array(i)
+    for ind, (r,i) in enumerate(zip(real_data, imag_data)):
+        r = np.array(r)
+        i = np.array(i)
 
-            sp = r**2 + i**2
+        sp = r**2 + i**2
 
-            if show_plots:
-                plt.plot(np.log10(sp),'.')
-                plt.title('spectra power')
-                plt.show()
-                plt.close()
+        if show_plots:
+            plt.plot(np.log10(sp),'.')
+            plt.title('spectra power')
+            plt.show()
+            plt.close()
 
-            if save_output:
-                out_path = out_folder+'/channel'+str(k)+'_spectra'
-                save_output_txt(sp, out_path, save_output, 'u-64')
+        #if save_output:
+        #    out_path = out_folder+'/channel'+str(k)+'_spectra'
+        #    save_output_txt(sp, out_path, save_output, 'u-64')
 
-            spec_pwr[k][ind][:] = sp
+        spec_pwr[ind] = sp
 
     return spec_pwr
 # -------------------------------------------------------------------------------------
@@ -56,9 +55,9 @@ def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, show
         plt.close()
 
     if save_output:
-        out_path = out_folder+'/channel01_xspectra_real'
+        out_path = out_folder+'/channel01_xspectra_real_pwr'
         save_output_txt(xspec_pwr_r, out_path, save_output, 'u-64')
-        out_path = out_folder+'/channel01_xspectra_imag'
+        out_path = out_folder+'/channel01_xspectra_imag_pwr'
         save_output_txt(xspec_pwr_i, out_path, save_output, 'u-64')
 
     return xspec_pwr_r, xspec_pwr_i

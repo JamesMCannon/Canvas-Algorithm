@@ -13,82 +13,77 @@ from fftpwr import fft_spec_power, fft_xspec_power
 from rebinacc import rebin_likefpga, acc_likefpga
 from cfbinavg import rebin_canvas
 
+from saveas import saveascsv
 
 # remove output files in path
-files = glob.glob('output/*')
-for f in files:
-    os.remove(f)
-files = glob.glob('plots_1_20/*')
-for f in files:
-    os.remove(f)
- 
-#freqs = [428, 967, 1.73e3, 4.12e3, 8.57e3, 11.92e3, 17.41e3, 23.56e3, 38.97e3]
-#shifts = [57*np.pi/(2*59), 63*np.pi/67, 3*41*np.pi/(2*43), 2*16*np.pi/19]
-#str_freqs =  ['428', '967', '1.73k', '4.12k', '8.57k', '11.92k', '17.41k', '23.56k', '38.97k']
+#files = glob.glob('output/*')
+#for f in files:
+#    os.remove(f)
 
-#for str_f, signal_freq1 in zip(str_freqs, freqs):
-#    for shift in shifts:
+# TODO clean up documentation and save output better!! No channel segments 
+
 fs = 131072.               # sampling freq. 
-sample_len = 1024*20/fs    # seconds
-signal_freq1 = 33e3      # signal freq. 1
+#sample_len = 1024*20/fs    # seconds
+#signal_freq1 = 33e3      # signal freq. 1
 #signal_freq2 = 14.7e3     # signal freq. 2
-amp = 2**15-5423           # amplitudes
-shift =0.  # shift
-
-#ss_str = str(round(shift,2))
-#s_str = ss_str[0]+'p'+ss_str[2:]
+#amp = 2**15-5423           # amplitudes
+#shift =0.  # shift
 
 nFFT = 1024
-n_acc = 1
-
+n_acc = 8
+ftest = '60k'
 # STEP 1 -------------------- GENERATE INPUT ----------------------------- 
-#channels_td = test_signal(fs, sample_len, [signal_freq1], [amp], shift=shift, show_plots=False, save_output='hex')
+#channels_td = test_signal(fs, sample_len, signal_freq1, amp, 1, shift=shift, show_plots=False, save_output='both')
 #channels_td = white_noise(fs, 1024*20/fs, 2**15-7985, show_plots=True, save_output='hex')
 #channels_td = input_chirp(fs, 1024*20/fs, 19.52e3, 567, 2039, show_plots=True, save_output='hex')
 
-#fpga_in = read_FPGA_input('FPGA/channel0_input_1.73_1.52_hex.txt', 16, signed=True, show_plots=True)
-#diff = quick_compare(channels_td[0], fpga_in, 1024, 'input', show_plots=True)
+channel1_td = read_FPGA_input('FPGA/stim_adc_data_'+ftest+'hz_180ms.txt', 16, signed=True, show_plots=False)
 
 # STEP 2 ----------------- GET HANNING WINDOW ----------------------------
-#win = get_win(nFFT, show_plots=False, save_output=None)
+win = get_win(nFFT, show_plots=False, save_output=None)
 
 # STEP 3 ----------------------- TAKE FFT --------------------------------
-#channels_fd_real, channels_fd_imag = canvas_fft(nFFT, fs, win, channels_td, overlap=True, show_plots=False, save_output=None)
+channel1_fd_real, channel1_fd_imag = canvas_fft(nFFT, fs, win, channel1_td, 1, overlap=True, show_plots=False, save_output=None)
+f_r, f_i = read_FPGA_input_lines('FPGA/fft_fbin_pwr_'+ftest+'hz.txt', 32, 4, 1, 2)
 
-# or get fft from file
-#fpga_ri = read_FPGA_input_2line('FPGA/fft_real_imag_33khz_fix.txt', 32, signed=True, show_plots=False)
+adds = []
+diff = quick_compare(channel1_fd_real, f_r, 512*44, show_plots=False)
 
-#fpga_i = [fpga_ri[n] for n in range(0,len(fpga_ri),2)]
-#fpga_r = [fpga_ri[n] for n in range(1,len(fpga_ri),2)]
+for ind, (fr, cr, dd) in enumerate(zip(f_r[:512*44], channel1_fd_real[:512*44],diff)):
+    add=[ind, fr, cr, dd]
+    adds.append(add)
 
-#channels_fd_realf = [[fpga_r[i:i+512] for i in range(0,len(fpga_r),512)]]
-#channels_fd_imagf = [[fpga_i[i:i+512] for i in range(0,len(fpga_r),512)]]
-
-#py_r = flatten(channels_fd_real[0])
-#py_i = flatten(channels_fd_imag[0])
-
-#quick_compare(py_r[:38*512], fpga_r[:38*512], 512, 'ffimag_512Hz', show_plots=True)
-
-ch0_fft_imag = read_FPGA_input('FPGA/channel0_fft_imag_hex.txt',32,signed=True, show_plots=False)
-ch0_fft_real = read_FPGA_input('FPGA/channel0_fft_real_hex.txt',32,signed=True, show_plots=False)
-ch1_fft_imag = read_FPGA_input('FPGA/channel1_fft_imag_hex.txt',32,signed=True, show_plots=False)
-ch1_fft_real = read_FPGA_input('FPGA/channel1_fft_real_hex.txt',32,signed=True, show_plots=False)
+saveascsv(ftest+'hz.csv',adds)
 
 # STEP 4 ----------------------- CALC PWR --------------------------------
-xspec_pwr_r, xspec_pwr_i = fft_xspec_power(ch0_fft_real, ch0_fft_imag, ch1_fft_real, ch1_fft_imag)
-xspec_r_f, xspec_i_f = read_FPGA_input_lines('FPGA/xspec_fbin_pwr_calc_fix.txt',64,7,5,6,signed=True,show_plots=False)
-
-#quick_compare(xspec_pwr_r[:len(xspec_r_f)], xspec_r_f,18000,show_plots=True)
+spec_pwr = fft_spec_power(channel1_fd_real, channel1_fd_imag)
+spec_pwr_f = fft_spec_power(f_r, f_i)
+s_discard, s = read_FPGA_input_lines('FPGA/fft_fbin_pwr_'+ftest+'hz.txt', 64, 4, 0, 3)
+#diff = quick_compare(spec_pwr_f[:512*44], s[:512*44], 512*44, show_plots=True)
 
 # STEP 5 -------------------- rebin and acc -------------------------------
-rebin_pwr_r = rebin_likefpga(xspec_pwr_r, 0, show_plots=False, save_output='both')
-rebin_pwr_i = rebin_likefpga(xspec_pwr_i, 0, show_plots=False, save_output='both')
+rebin_pwr_r = rebin_likefpga(spec_pwr_f, 0, show_plots=False, save_output='both')
+acc_pwr_r = acc_likefpga(rebin_pwr_r, n_acc,'real', show_plots=False, save_output='both')
 
-re_r, re_i = read_FPGA_input_lines('FPGA/xspec_fbin_acc_calc_fix.txt',64,3,1,2,signed=True,show_plots=False)
+# acc is wrong, use this
+s_discard, sacc = read_FPGA_input_lines('FPGA/fbin_total_pwr_'+ftest+'hz.txt', 64, 2, 0, 1,signed=False)
 
-acc_pwr_r = acc_likefpga(rebin_pwr_r, n_acc,0, show_plots=False, save_output='both')
-acc_pwr_i = acc_likefpga(rebin_pwr_i, n_acc,0, show_plots=False, save_output='both')
+acc_f2 = np.zeros((len(rebin_pwr_r)//(330*n_acc),330))
+for i in range(0,len(rebin_pwr_r)//(330*n_acc)):
+    
+    for k in range(330):
+        argh = []
+        for j in range(8*i*330,8*(i+1)*330,330):
+            check = rebin_pwr_r[j:j+330]
+            argh.append(check[k])
+        thatval = sum(argh)
+        acc_f2[i][k] = thatval
 
+quick_compare(flatten(acc_f2), sacc, 330*5, show_plots=True)
+vals = 330*44//8
+#diff = quick_compare(acc_pwr_r[:vals], sacc[:vals], vals, show_plots=True)
+
+"""
 # STEP 5 ---------------- average in time and freq -------------------------
 fname = 'CANVAS_fbins/fbins.txt'                                 
 fbins_str = np.genfromtxt(fname, dtype='str') 
@@ -96,15 +91,13 @@ fbins_dbl = [(float(f[0].replace(',','')),float(f[1].replace(',',''))) for f in 
 c_fbins = [item for sublist in fbins_dbl for item in sublist]
 center_freqs = [fs/nFFT * ff for ff in np.arange(0, 512)]
 
-avg_pwr_r = rebin_canvas(rebin_pwr_r[:11550], n_acc,0, c_fbins, center_freqs, show_plots=False, save_output='both')
-avg_pwr_i = rebin_canvas(rebin_pwr_i[:11550], n_acc,0, c_fbins, center_freqs, show_plots=False, save_output='both')
-
-avg_r, avg_i = read_FPGA_input_lines('FPGA/xspec_bin_avg_calc_fix.txt',64,2,0,1,signed=True,show_plots=False)
-print('original val before avg: ',re_r[0],  'python: ', avg_pwr_r[0], 'fpga: ',avg_r[0])
-quick_compare(avg_pwr_i,avg_i[:1995], 1995,show_plots=False)
+avg_pwr_r = rebin_canvas(acc_pwr_r, n_acc,'real', c_fbins, center_freqs, show_plots=False, save_output='both')
+vals = 330*44//8
+s_discard, sacc = read_FPGA_input_lines('FPGA/fbin_total_pwr_'+ftest+'hz.txt', 64, 2, 0, 1)
+quick_compare(acc_pwr_r[:vals], sacc[:vals], vals, show_plots=True)
 
 
-"""
+
 datalines = [line.strip() for line in f]
 output_val = [int(line[-3:],16) for line in datalines]
 input_val = [int(line[:-4].strip(),16) for line in datalines]

@@ -55,24 +55,14 @@ def quick_compare(py_array, fp_array, vals, show_plots=False):
     py_array = np.array(py_array)
     fp_array = np.array(fp_array)
 
-    diff = (py_array - fp_array)
-    #for bin, (py, fp) in enumerate(zip(py_array[:vals], fp_array[:vals])):
-    #    print(bin, py, fp)
+    diff = (py_array[:vals] - fp_array[:vals])
     
     if show_plots:
         plt.plot(diff)
-        #plt.plot(np.linspace(0,vals,num=vals), np.sign(fp_array[:vals]),color='cyan', marker='s', linestyle='', label='fpga')
-        #plt.plot(np.linspace(0,vals,num=vals), np.sign(py_array[:vals]),color='red', marker='+', linestyle='', label='python')
-        #plt.legend()
-        #plt.ylabel('sign')
-        #plt.xlabel('bin #')
-        #plt.title(title)
-        #plt.show()
-        #plt.savefig(title+'_sign_comp_fix.png')
         plt.show()
         plt.close()
 
-    return
+    return diff
 # ------------------------------------------------------------------------------------
 
 def flatten(mylist):
@@ -155,3 +145,5 @@ def read_FPGA_input_lines(file, b, line_n, x, y, signed=True, show_plots=False):
     d2 = [fpga_in_data[n] for n in range(y,len(fpga_in_data),line_n)]
 
     return d1, d2
+
+# ------------------------------------------------------------------------------------ 

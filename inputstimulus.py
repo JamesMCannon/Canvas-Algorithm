@@ -66,26 +66,18 @@ def resample(data, sample_len, fs_vlf, fs):
 # ------------------------------------------------------------------------------------
 
 # ------------------------------- Create a Test Signal ------------------------------- 
-def test_signal(fs, sample_len, freqs, amps, shift=None, show_plots=False, save_output='both', out_folder='output'):
+def test_signal(fs, sample_len, freq, amp, channel_num, shift=None, show_plots=False, save_output='both', out_folder='output'):
 
     # create time domain data
     t_vec = np.linspace(0, sample_len, num=int(fs*sample_len))   # create time vec
     
-    channels_td_raw = []
-    for i, (f, a) in enumerate(zip(freqs, amps)):
-        if shift:
-            #if i == 0:
-            #    channels_td_raw.append(a * np.sin(f * 2 * np.pi * t_vec))
-            if i == 0:
-                print('shifting')
-                channels_td_raw.append(a * np.sin(f * 2 * np.pi * t_vec + shift))
-        else:
-            channels_td_raw.append(a * np.sin(f * 2 * np.pi * t_vec))
+    if shift:
+            print('shifting')
+            channels_td_raw = amp * np.sin(freq * 2 * np.pi * t_vec + shift)
+    else:
+        channels_td_raw = amp * np.sin(freq * 2 * np.pi * t_vec)
 
-    channels_td = [] # rounded to be 16 bit signed input
-    for ctd in channels_td_raw:
-        cx = [round(c,0) for c in ctd]
-        channels_td.append(cx)
+    channels_td =  [round(c,0) for c in channels_td_raw] # rounded to be 16 bit signed input
 
     if show_plots:
         plt_chk = 1024
@@ -96,12 +88,15 @@ def test_signal(fs, sample_len, freqs, amps, shift=None, show_plots=False, save_
         plt.close()
 
     # cast input (ints) to 16bit int represented in hex or integers
-    for ci, c in enumerate(channels_td):
-        if save_output:
-            out_path = out_folder+'/channel'+str(ci)+'_input_'+str(freqs[0]/1e3)+'_'+str(round(shift,2))
-            save_output_txt(c, out_path, save_output, 's-16')
+    if save_output:
+        out_path = out_folder+'/channel'+str(channel_num)+'_input'
+        save_output_txt(channels_td, out_path, save_output, 's-16')
     return channels_td
 # ------------------------------------------------------------------------------------
+
+
+
+
 
 def input_chirp(fs, sample_len, f0, f1, amp, show_plots=True, save_output='both', out_folder='output'):
     # create time domain data

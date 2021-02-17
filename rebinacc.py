@@ -35,12 +35,14 @@ def rebin_likefpga(pwr, ci, show_plots=False, save_output=False, out_folder='out
 def acc_likefpga(rebin_pwr, n_acc,ci, show_plots=False, save_output='both', out_folder='output'):
     
     acc_pwr = []
+    new_pwr = np.zeros(330)
     #pad = len(rebin_pwr[0])%n_acc
-    for a in range(0,len(rebin_pwr),330):
-        new_pwr = []
-        for n in range(n_acc):
-            new_pwr += rebin_pwr[a:a+330]
-        acc_pwr.append(new_pwr)
+    for ai,a in enumerate(range(0,len(rebin_pwr),330)):
+        new_pwr[:] += rebin_pwr[a:a+330]
+        if ai%n_acc == 0 and ai !=0:
+            acc_pwr.append(new_pwr)
+            new_pwr = np.zeros(330)
+        
     acc_pwr = flatten(acc_pwr)
     """
     for ci, c in enumerate(rebin_pwr):
@@ -62,6 +64,11 @@ def acc_likefpga(rebin_pwr, n_acc,ci, show_plots=False, save_output='both', out_
         plt.title('acc power')
         plt.show()
         plt.close()
+
+    if save_output:
+        out_path = out_folder+'/channel01_xspectra_' + ci + '_acc'
+        save_output_txt(acc_pwr, out_path, save_output, 'u-64')
+
 
     return acc_pwr 
 # ------------------------------------------------------------------------------------

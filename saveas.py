@@ -32,3 +32,9 @@ def save_output_txt(out_array, out_path, out_type, bits):
                     output.write(str(np.uint64(x)) + '\n')
     return
 # ------------------------------------------------------------------------------------
+
+def saveascsv(fname, adds, outputfolder='output'):
+    import csv
+    with open(outputfolder+'/'+fname, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(adds)

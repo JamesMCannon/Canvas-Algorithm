@@ -37,5 +37,9 @@ def rebin_canvas(acc_p, n_acc, ci, fbins, center_freqs, show_plots=False, save_o
 
     avg_pwr = flatten(all_avg_pwr)
 
+    if save_output:
+        out_path = out_folder+'/channel01_xspectra_' + ci + '_avg'
+        save_output_txt(avg_pwr, out_path, save_output, 'u-64')
+
     return avg_pwr # return size i x j where i = accum and j = len of fbins
 # ------------------------------------------------------------------------------------
