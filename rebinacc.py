@@ -8,7 +8,7 @@ from readFPGA import flatten
 # let's do this in one step on the power values 
 
 # ------------------------- rebin like the FPGA ------------------------------------
-def rebin_likefpga(pwr, ci, show_plots=False, save_output=False, out_folder='output'):
+def rebin_likefpga(pwr, channel_num, show_plots=False, save_output=False, out_folder='output'):
     
     rebin_pwr = []
     for p in range(0,len(pwr),512):
@@ -21,7 +21,7 @@ def rebin_likefpga(pwr, ci, show_plots=False, save_output=False, out_folder='out
             plt.close()
 
         if save_output:
-            out_path = out_folder+'/channel'+str(ci)+'_rebin'
+            out_path = out_folder+'/channel'+str(channel_num)+'_rebin'
             save_output_txt(rp, out_path, save_output, 'u-64')
         
         rebin_pwr.append(rp)
@@ -32,33 +32,21 @@ def rebin_likefpga(pwr, ci, show_plots=False, save_output=False, out_folder='out
 # ------------------------------------------------------------------------------------
 
 # ------------------------- acc like the FPGA ------------------------------------
-def acc_likefpga(rebin_pwr, n_acc,ci, show_plots=False, save_output='both', out_folder='output'):
+def acc_likefpga(rebin_pwr, n_acc, channel_num, show_plots=False, save_output='both', out_folder='output'):
     
-    acc_pwr = []
-    new_pwr = np.zeros(330)
-    #pad = len(rebin_pwr[0])%n_acc
-    for ai,a in enumerate(range(0,len(rebin_pwr),330)):
-        new_pwr[:] += rebin_pwr[a:a+330]
-        if ai%n_acc == 0 and ai !=0:
-            acc_pwr.append(new_pwr)
-            new_pwr = np.zeros(330)
-        
-    acc_pwr = flatten(acc_pwr)
-    """
-    for ci, c in enumerate(rebin_pwr):
-        if pad!=0:
-            for i in range(n_acc-pad):
-                c = list(c)
-                c.append(np.zeros(np.shape(rebin_pwr)[2]))
-        new_rebin.append(c)
-
-    acc_pwr = np.zeros((np.shape(new_rebin)[0], np.shape(new_rebin)[1]//n_acc,  np.shape(new_rebin)[2]))
-    for ci, c in enumerate(new_rebin):
-        for ti, t in enumerate(range(0, len(c), n_acc)):
-            for p in range(0, n_acc):
-                acc_pwr[ci][ti] += c[p+t]
-    """
-
+    acc_f2 = np.zeros((len(rebin_pwr)//(330*n_acc),330))
+    for i in range(0,len(rebin_pwr)//(330*n_acc)):
+        print(i)
+        for k in range(330):
+            argh = []
+            for j in range(n_acc*i*330,n_acc*(i+1)*330,330):
+                check = rebin_pwr[j:j+330]
+                argh.append(int(check[k]))
+            mysum=0
+            for ar in argh:
+                mysum+=int(ar)
+            thatval = mysum
+            acc_f2[i][k] = thatval
     if show_plots:
         plt.plot(np.log10(acc_pwr),'.')
         plt.title('acc power')
@@ -66,9 +54,8 @@ def acc_likefpga(rebin_pwr, n_acc,ci, show_plots=False, save_output='both', out_
         plt.close()
 
     if save_output:
-        out_path = out_folder+'/channel01_xspectra_' + ci + '_acc'
-        save_output_txt(acc_pwr, out_path, save_output, 'u-64')
+        out_path = out_folder+'/'+ 'channel' + str(channel_num) + '_acc'
+        save_output_txt(flatten(list(acc_f2)), out_path, save_output, 'u-64')
 
-
-    return acc_pwr 
+    return flatten(list(acc_f2)) 
 # ------------------------------------------------------------------------------------

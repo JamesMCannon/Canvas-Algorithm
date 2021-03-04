@@ -80,9 +80,8 @@ def test_signal(fs, sample_len, freq, amp, channel_num, shift=None, show_plots=F
     channels_td =  [round(c,0) for c in channels_td_raw] # rounded to be 16 bit signed input
 
     if show_plots:
-        plt_chk = 1024
-        for ch in channels_td:
-            plt.plot(t_vec[:plt_chk], ch[:plt_chk])
+        plt_chk = int(len(channels_td))
+        plt.plot(t_vec[:plt_chk], channels_td[:plt_chk])
         plt.title('Input Signal - first 1024')
         plt.show()
         plt.close()

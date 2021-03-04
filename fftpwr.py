@@ -54,7 +54,7 @@ def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, show
         plt.show()
         plt.close()
 
-    if save_output:
+    if save_output: # this is wrong, it IS signed!
         out_path = out_folder+'/channel01_xspectra_real_pwr'
         save_output_txt(xspec_pwr_r, out_path, save_output, 'u-64')
         out_path = out_folder+'/channel01_xspectra_imag_pwr'

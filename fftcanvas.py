@@ -42,7 +42,7 @@ def canvas_fft(nFFT, fs, win, channel_td, channel_num, overlap=True, show_plots=
             plt.close()
 
         if save_output:
-            out_path = out_folder+'/channel'+str(ci)+'_win'
+            out_path = out_folder+'/channel'+str(channel_num)+'_win'
             save_output_txt(cs_win, out_path, save_output, 's-32')
         # ----------------------------------------------------------------------------
 
@@ -60,7 +60,9 @@ def canvas_fft(nFFT, fs, win, channel_td, channel_num, overlap=True, show_plots=
         # ---------------------------check FFT ----------------------------------- 
         center_freqs = [fs/nFFT * ff for ff in np.arange(1, 513)]
         if i==0 and show_plots:
-            plt.semilogy(center_freqs[0:nFFT//2], np.abs(cs_f[0:nFFT//2]), '-r')
+            plt.semilogy(np.array(center_freqs[0:nFFT//2])/1e3, np.abs(cs_f[0:nFFT//2]), '-r')
+            plt.ylabel('fft')
+            plt.xlabel('freq [kHz]')
             plt.title('FFT')
             plt.show()
             plt.close()
