@@ -10,7 +10,7 @@ from saveas import save_output_txt
 # we shouldnt have to round either of these bc the input is int
 
 # ---------------------------- Compute Power of Spectra -------------------------------
-def fft_spec_power(real_data, imag_data, show_plots=False, save_output='both', out_folder='output'):
+def fft_spec_power(real_data, imag_data, channel_num=0, show_plots=False, save_output='both', out_folder='output'):
 
     spec_pwr = np.zeros_like(real_data)
 
@@ -26,9 +26,9 @@ def fft_spec_power(real_data, imag_data, show_plots=False, save_output='both', o
             plt.show()
             plt.close()
 
-        #if save_output:
-        #    out_path = out_folder+'/channel'+str(k)+'_spectra'
-        #    save_output_txt(sp, out_path, save_output, 'u-64')
+        if save_output:
+            out_path = out_folder+'/channel'+str(channel_num)+'_spectra'
+            save_output_txt(sp, out_path, save_output, 'u-64')
 
         spec_pwr[ind] = sp
 
@@ -36,7 +36,7 @@ def fft_spec_power(real_data, imag_data, show_plots=False, save_output='both', o
 # -------------------------------------------------------------------------------------
 
 # ---------------------------- Compute Power of XSpectra -------------------------------
-def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, show_plots=False, save_output='both', out_folder='output'):
+def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, channel_nums=[0,1], show_plots=False, save_output='both', out_folder='output'):
 
     xspec_pwr_r = np.zeros_like(c1_real_data)
     xspec_pwr_i = np.zeros_like(c1_imag_data)
@@ -55,9 +55,9 @@ def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, show
         plt.close()
 
     if save_output: # this is wrong, it IS signed!
-        out_path = out_folder+'/channel01_xspectra_real_pwr'
+        out_path = out_folder+'/channel'+str(channel_nums[0])+str(channel_nums[1])+'_xspectra_real_pwr'
         save_output_txt(xspec_pwr_r, out_path, save_output, 'u-64')
-        out_path = out_folder+'/channel01_xspectra_imag_pwr'
+        out_path = out_folder+'/channel'+str(channel_nums[0])+str(channel_nums[1])+'_xspectra_imag_pwr'
         save_output_txt(xspec_pwr_i, out_path, save_output, 'u-64')
 
     return xspec_pwr_r, xspec_pwr_i

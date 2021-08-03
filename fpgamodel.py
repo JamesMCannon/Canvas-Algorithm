@@ -1,9 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 import glob
-import math
 
+# functions from this folder
 from readFPGA import read_FPGA_input, read_INT_input, quick_compare, flatten, twos_complement
 from readFPGA import read_FPGA_fft_debug, read_FPGA_input_lines
 from inputstimulus import test_signal, input_chirp, white_noise
@@ -21,24 +20,20 @@ for f in files:
     os.remove(f)
 
 # some set up parameters
-
-fs = 131072.             # sampling freq. 
-signal_freq1 = 35e3    # signal freq. 1
-signal_freq2 = 35e3 # signal freq. 2
-amp = 2**15         # amplitudes
-shift = 0  # shift
-
-period = 1/signal_freq1
-sample_len = 64*1024/fs # seconds
-sample_len = 1024*256*2/fs
-nFFT = 1024
-n_acc = 8
+fs = 131072.                # sampling freq. in Hz
+signal_freq0 = 35e3         # signal freq. 1 in Hz
+signal_freq1 = 35e3         # signal freq. 2 in Hz
+amp0 = 2**15                # amplitudes (in ADC units)
+amp1 = 2**15                # amplitudes (in ADC units)
+shift0 = 0                  # phase shift in radians
+shift1 = 0                  # phase shift in radians
+sample_len = 1024*256*2/fs  # seconds
+nFFT = 1024                 # length of FFT
+n_acc = 256                 # number of FFTs to accummulate
 
 # STEP 1 -------------------- GENERATE INPUT ----------------------------- 
-#channels1_td = test_signal(fs, sample_len, signal_freq1, amp, 1, shift=0, show_plots=False, save_output='both')
-
-# or input from a file
-channels1_td = read_FPGA_input('FPGA/497_32p8_494_8165_s1piover7_input_hex.txt',16, show_plots=False)
+channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, channel_num=0, shift=shift0, show_plots=False, save_output='both')
+channels1_td = test_signal(fs, sample_len, signal_freq1, amp1, channel_num=1, shift=shift1, show_plots=False, save_output='both')
 
 # STEP 2 ----------------- GET HANNING WINDOW ----------------------------
 win = get_win(nFFT, show_plots=False, save_output=None)
@@ -75,12 +70,10 @@ fbins_dbl = [(float(f[0].replace(',','')),float(f[1].replace(',',''))) for f in 
 c_fbins = [item for sublist in fbins_dbl for item in sublist]
 center_freqs = [fs/nFFT * ff for ff in np.arange(0, 512)]
 
-avg_pwr = rebin_canvas(acc_pwr, n_acc, c_fbins, center_freqs,0,tx_bins=True,show_plots=False, save_output='both')
-
-bavg, cpmrs = read_FPGA_input_lines('FPGA/bin_avg_pwr.txt',64,3,1,2)
-
-quick_compare(bavg,avg_pwr,1024,show_plots=True)
+avg_pwr_r = rebin_canvas(acc_pwr_r, n_acc, c_fbins, center_freqs, tx_bins=True, channel_num=0, show_plots=False, save_output='both')
+avg_pwr_i = rebin_canvas(acc_pwr_i, n_acc, c_fbins, center_freqs, tx_bins=True, channel_num=0, show_plots=False, save_output='both')
 
 # STEP 7 ---------------- compress -------------------------
-cmprs_val = spec_compress(avg_pwr,0)
-quick_compare(cmprs_val,cpmrs,1024,show_plots=True)
+# use spec compress or xspec compress for log2 compression
+cmprs_val_r = xspec_compress(avg_pwr_r,channel_num=0, show_plots=False, save_output='both')
+cmprs_val_i = xspec_compress(avg_pwr_i,channel_num=0, show_plots=False, save_output='both')

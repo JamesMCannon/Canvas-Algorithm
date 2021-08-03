@@ -5,10 +5,10 @@ from saveas import save_output_txt
 from readFPGA import flatten
 
 # ------------------------------------- CANVAS FFT alg -----------------------------------------
-def canvas_fft(nFFT, fs, win, channel_td, channel_num, overlap=True, show_plots=False, save_output='both', out_folder='output'):
+def canvas_fft(nFFT, fs, win, channel_td, channel_num=0, overlap=True, show_plots=False, save_output='both', out_folder='output'):
 
-    c_fd_r = [] # store channel f domain
-    c_fd_i = [] 
+    c_fd_r = [] # store channel f domain real
+    c_fd_i = [] # store channel f domain imag
 
     # first, handle any channels that aren't nFFT*n points in length
     remainder = int(len(channel_td)) % nFFT
