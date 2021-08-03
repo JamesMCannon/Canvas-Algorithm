@@ -91,9 +91,9 @@ def rebin_canvas(acc_p, n_acc, fbins, center_freqs, tx_bins=True, channel_num=0,
 
     avg_pwr = flatten(final_avg_pwr)
 
-    #if save_output:
-    #    out_path = out_folder+'/channel'+str(channel_num)+'_avg'
-    #    save_output_txt(avg_pwr, out_path, save_output, 'u-64')
+    if save_output:
+        out_path = out_folder+'/channel'+str(channel_num)+'_avg'
+        save_output_txt(avg_pwr, out_path, save_output, 'u-64')
 
     return avg_pwr # return size i x j where i = accum and j = len of fbins
 # ------------------------------------------------------------------------------------

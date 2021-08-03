@@ -66,7 +66,7 @@ def resample(data, sample_len, fs_vlf, fs):
 # ------------------------------------------------------------------------------------
 
 # ------------------------------- Create a Test Signal ------------------------------- 
-def test_signal(fs, sample_len, freq, amp, channel_num=1, shift=0, show_plots=False, save_output='both', out_folder='output'):
+def test_signal(fs, sample_len, freq, amp, shift=0, channel_num=0, show_plots=False, save_output='both', out_folder='output'):
 
     # create time domain data
     t_vec = np.linspace(0, sample_len, num=int(fs*sample_len))   # create time vec
