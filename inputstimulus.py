@@ -66,16 +66,12 @@ def resample(data, sample_len, fs_vlf, fs):
 # ------------------------------------------------------------------------------------
 
 # ------------------------------- Create a Test Signal ------------------------------- 
-def test_signal(fs, sample_len, freq, amp, channel_num, shift=None, show_plots=False, save_output='both', out_folder='output'):
+def test_signal(fs, sample_len, freq, amp, channel_num=1, shift=0, show_plots=False, save_output='both', out_folder='output'):
 
     # create time domain data
     t_vec = np.linspace(0, sample_len, num=int(fs*sample_len))   # create time vec
     
-    if shift:
-            print('shifting')
-            channels_td_raw = amp * np.sin(freq * 2 * np.pi * t_vec + shift)
-    else:
-        channels_td_raw = amp * np.sin(freq * 2 * np.pi * t_vec)
+    channels_td_raw = amp * np.sin(freq * 2 * np.pi * t_vec + shift)
 
     channels_td =  [round(c,0) for c in channels_td_raw] # rounded to be 16 bit signed input
 
@@ -94,9 +90,7 @@ def test_signal(fs, sample_len, freq, amp, channel_num, shift=None, show_plots=F
 # ------------------------------------------------------------------------------------
 
 
-
-
-
+# some other types of input signals we tried
 def input_chirp(fs, sample_len, f0, f1, amp, show_plots=True, save_output='both', out_folder='output'):
     # create time domain data
     t_vec = np.linspace(0, sample_len, num=int(fs*sample_len))   # create time vec

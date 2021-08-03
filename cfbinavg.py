@@ -6,7 +6,7 @@ from readFPGA import flatten
 
 # ------------------------------- Rebin for CANVAS fbins ----------------------------
 # the center fs are for the 512 length FFT and the fbins are either from canvas bins or tx bins 
-def rebin_canvas(acc_p, n_acc, fbins, center_freqs, channel_num, tx_bins=True, show_plots=False, save_output='both', out_folder='output'): 
+def rebin_canvas(acc_p, n_acc, fbins, center_freqs, tx_bins=True, channel_num=0, show_plots=False, save_output='both', out_folder='output'): 
     all_avg_pwr = []
     for pi in range(0,len(acc_p),330): 
         avg_pwr = []

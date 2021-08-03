@@ -8,7 +8,7 @@ from readFPGA import flatten
 # let's do this in one step on the power values 
 
 # ------------------------- rebin like the FPGA ------------------------------------
-def rebin_likefpga(pwr, channel_num, show_plots=False, save_output=False, out_folder='output'):
+def rebin_likefpga(pwr, channel_num=0, show_plots=False, save_output=False, out_folder='output'):
     
     rebin_pwr = []
     for p in range(0,len(pwr),512):
@@ -32,7 +32,7 @@ def rebin_likefpga(pwr, channel_num, show_plots=False, save_output=False, out_fo
 # ------------------------------------------------------------------------------------
 
 # ------------------------- acc like the FPGA ------------------------------------
-def acc_likefpga(rebin_pwr, n_acc, channel_num, show_plots=False, save_output='both', out_folder='output'):
+def acc_likefpga(rebin_pwr, n_acc, channel_num=0, show_plots=False, save_output='both', out_folder='output'):
     
     acc_f2 = np.zeros((len(rebin_pwr)//(330*n_acc),330))
     for i in range(0,len(rebin_pwr)//(330*n_acc)):

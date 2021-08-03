@@ -4,7 +4,7 @@ import math
 from saveas import save_output_txt
 
 # ------------------------- log2 compression ------------------------------------
-def spec_compress(avg_pwr, channel_num, show_plots=False, save_output='both', out_folder='output'):
+def spec_compress(avg_pwr, channel_num=0, show_plots=False, save_output='both', out_folder='output'):
     cmprs_pwr = []
     for iv in avg_pwr:
         if iv == 0:  # if 0, compressed is 0
@@ -21,7 +21,7 @@ def spec_compress(avg_pwr, channel_num, show_plots=False, save_output='both', ou
 # ------------------------------------------------------------------------------------
 
 # ------------------------- log2 compression ------------------------------------
-def xspec_compress(avg_pwr, channel_num, show_plots=False, save_output='both', out_folder='output'):
+def xspec_compress(avg_pwr, channel_num=0, show_plots=False, save_output='both', out_folder='output'):
     cmprs_pwr = []
     for iv in avg_pwr:
         if iv == 0:  # if 0, compressed is 0
