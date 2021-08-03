@@ -39,27 +39,14 @@ channels1_td = test_signal(fs, sample_len, signal_freq1, amp1, channel_num=1, sh
 win = get_win(nFFT, show_plots=False, save_output=None)
 
 # STEP 3 ----------------------- TAKE FFT --------------------------------
-channel1_fd_real, channel1_fd_imag = canvas_fft(nFFT, fs, win, channels1_td, 0, overlap=True, show_plots=False, save_output='both')
-f_ar, f_ai = read_FPGA_input_lines('FPGA/fft_fbin_pwr.txt', 32, 4, 1, 2)
-print(channel1_fd_imag[254:258],f_ai[254:258])
-
-for i, (fi, pu) in enumerate(zip(f_ai,channel1_fd_imag)):
-    if pu!=0:
-        dd = (fi - pu) / pu
-        if np.abs(dd) > 0.5 and np.abs(pu) > 500:
-            print(i,fi,pu)
+channel0_fd_real, channel0_fd_imag = canvas_fft(nFFT, fs, win, channels0_td, overlap=True,  channel_num=0, show_plots=False, save_output='both')
 
 # STEP 4 ----------------------- CALC PWR --------------------------------
-spec_pwr = fft_spec_power(f_ar, f_ai)
-spc, fspec = read_FPGA_input_lines('FPGA/fft_fbin_pwr.txt', 64, 4, 2, 3)
-
-#quick_compare(fspec,spec_pwr,len(spec_pwr),show_plots=True)
+spec_pwr = fft_spec_power(channel0_fd_real, channel0_fd_imag, channel_num=0, show_plots=False, save_output='both')
 
 # STEP 5 -------------------- rebin and acc -------------------------------
-spc, fspec = read_FPGA_input_lines('FPGA/fft_fbin_pwr.txt', 64, 4, 2, 3)
-
-rebin_pwr= rebin_likefpga(spec_pwr, 0, show_plots=False, save_output='both')
-acc_pwr = acc_likefpga(rebin_pwr, n_acc, 0, show_plots=False, save_output='both')
+rebin_pwr= rebin_likefpga(spec_pwr, channel_num=0, show_plots=False, save_output='both')
+acc_pwr = acc_likefpga(rebin_pwr, n_acc, channel_num=0, show_plots=False, save_output='both')
 
 
 # STEP 6 ---------------- average in time and freq -------------------------
