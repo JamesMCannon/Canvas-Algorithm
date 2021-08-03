@@ -55,7 +55,7 @@ def quick_compare(py_array, fp_array, vals, show_plots=False):
     py_array = np.array(py_array)
     fp_array = np.array(fp_array)
 
-    diff = py_array[:vals] - fp_array[:vals]
+    diff = (py_array[:vals] - fp_array[:vals]) / py_array[:vals]
     
     if show_plots:
         plt.plot(diff)

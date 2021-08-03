@@ -26,7 +26,7 @@ def rebin_canvas(acc_p, n_acc, fbins, center_freqs, channel_num, tx_bins=True, s
                     # append power value to list for new canvas bin
                     newbin_power.append(p[ff_ind-2])
             # this step AVERAGES the power by summing and dividing by the # of bins and # of accummulated ffts
-            print(sum(newbin_power))
+            #print(sum(newbin_power))
             avg_pwr.append(np.floor(sum(newbin_power)//(len(newbin_power)*n_acc)))
             # break at the last canvas bin
             if fbins_ind > len(fbins) - 4: 
