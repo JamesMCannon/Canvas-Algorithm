@@ -1,0 +1,10 @@
+altgraph==0.17
+future==0.18.2
+iso8601==0.1.16
+macholib==1.15
+numpy==1.21.1
+pyinstaller==4.5.1
+pyinstaller-hooks-contrib==2021.2
+pyserial==3.5
+PyYAML==5.4.1
+serial==0.0.97

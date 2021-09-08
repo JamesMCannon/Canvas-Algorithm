@@ -4,3 +4,4 @@ output/*
 FPGA/*
 __pycache__/*
 canalg_env/*
+!requirements.txt
