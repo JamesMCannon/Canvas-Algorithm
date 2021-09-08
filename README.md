@@ -1,26 +1,39 @@
 # canvas_algorithm
 canvas cubesat development!
 
-
 this code is to run the canvas data processing algorthim that will be loaded onto the FPGA onboard CANVAS
-this code was written in python because I know python
 
 we used this code base to test the algorithm and run input data through this code and through the FPGA simulation, and see where there were differences
 
-it helped us understand how the FPGA does these computations and what differences we might expect
+it helped us understand how the FPGA does these computations and what differences we might expect.
 
-we are now going to be using this to generate input data and run it through the physical FPGA and this code and see how they compare
+```fpgamodel.py``` includes all the functions that are used and outlines the steps of the data processing.
 
+for more detail, contact the CANVAS team for payload documentation
 
+to install this repo into your computer: 
+```
+git clone https://github.com/rareid2/canvas_algorithm.git
+```
 
-fpgamodel.py includes all the functions that are used
+move into your newly cloned repo:
+```
+cd canvas_algorithm
+```
 
-first, test data is generated (either from table mtn or just fake data)
-then, a windowing function is applied that is designed to match the FPGA window operation
+and create a virtual environment:
+```
+python3 -m venv canalg_env
+```
 
-next, the fft is taken. we found there are some differences in the fft between the fpga fft and the python fft, but we noted these and kept going
+activate that environment:
+```
+source canalg_env/bin/activate
+```
 
-power values are found from the resulting fft data, and then the biggest part of the algorithm happens where the resulting fbins are averaged into log-spaced bins 
-and the power values are accummulated over time and averaged every second
+and finally install packages
+```
+pip install -r requirements.txt
+```
 
-the result is compressed before it comes into the final science packets
+to run a test of the canvas alrgorithm, navigate to the ```fpgamodel.py``` and run that script with the desired input settings
