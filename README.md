@@ -27,8 +27,11 @@ python3 -m venv canalg_env
 ```
 
 activate that environment:
-```
+Unix/Mac:```
 source canalg_env/bin/activate
+```
+Windows:```
+.\canalg_env\Scripts\activate
 ```
 
 and finally install packages
