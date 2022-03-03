@@ -13,7 +13,7 @@ for more detail, contact the CANVAS team for payload documentation
 
 to install this repo into your computer: 
 ```
-git clone https://github.com/rareid2/canvas_algorithm.git
+git clone https://github.com/JamesMCannon/Canvas-Algorithm.git
 ```
 
 move into your newly cloned repo:
