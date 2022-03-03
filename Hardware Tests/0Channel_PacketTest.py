@@ -65,7 +65,7 @@ print(length) #check data length
 vals = np.zeros(length,1)
 for i in length:
     v=pic_ser.read()
-    vals(i) = int(v)
+    vals[i] = int(v)
 
 #save data
 np.savetxt('TestFile.csv', vals, delimiter=',')
