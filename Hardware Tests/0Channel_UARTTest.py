@@ -55,7 +55,7 @@ pic_ser.write(bytes(StartFPGA , 'utf-8'))
 
 #TODO: wait for acknowledge, PIC will echo command sent
 
-len = 8 #length of packet in bytes
+length = 8 #length of packet in bytes
 
 #read in packet
 vals = np.zeros(length,1)
