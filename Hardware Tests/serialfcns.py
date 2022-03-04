@@ -1,7 +1,7 @@
 
 import serial #import serial library
 
-def wait_byte(ser,ack):
+def wait4byte(ser,ack):
 
     ack_read = False
     val = ''
