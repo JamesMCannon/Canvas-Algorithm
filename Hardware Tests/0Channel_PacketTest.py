@@ -4,7 +4,7 @@ import serial #import serial library
 import time
 import numpy as np
 from numpy import random
-from serialfcns import wait_byte
+from serialfcns import wait4byte
 
 MAX_VALUE_OF_16_BIT_INT = 2 ** (16 - 1) - 1 # max for two's complement integer
 MIN_VALUE_OF_16_BIT_INT = -1 * (2 ** (16 - 1)) # most negative for two's complement integer 
@@ -42,7 +42,7 @@ pic_ser.write(bytes(SetConfig , 'utf-8'))
 pic_ser.write(bytes(TX_Packet_Gen , 'utf-8'))
 
 #Wait for acknowledge
-val=wait_byte(pic_ser,ack)
+val=wait4byte(pic_ser,ack)
 print('Recieved command: ')
 print(val)     
 
@@ -50,22 +50,22 @@ print(val)
 pic_ser.write(bytes(StartFPGA , 'utf-8'))
 
 #Wait for acknowledge
-val=wait_byte(pic_ser,ack)
+val=wait4byte(pic_ser,ack)
 print('Recieved command: ')
 print(val)
 
 #Synchronize with expected packet
 val = ''
-val+=wait_byte(FPGA_ser,s1)
+val+=wait4byte(FPGA_ser,s1)
 print('First Sync byte recieved: ')
 print(val)
-val+=wait_byte(FPGA_ser,s2)
+val+=wait4byte(FPGA_ser,s2)
 print('Second Sync byte recieved: ')
 print(val)
-val+=wait_byte(FPGA_ser,s3)
+val+=wait4byte(FPGA_ser,s3)
 print('Third Sync byte recieved: ')
 print(val)
-val+=wait_byte(FPGA_ser,s4)
+val+=wait4byte(FPGA_ser,s4)
 print('Fourth Sync byte recieved: ')
 print(val)
 
@@ -78,7 +78,7 @@ print(length) #check data length
 word_length = length/4
 print(word_length) #check work length
 
-#read in payload
+#read in payload in 4-byte words
 vals = np.zeros(word_length,1)
 for i in word_length:
     v=FPGA_ser.read(4)
