@@ -48,10 +48,16 @@ channel1_fd_real, channel1_fd_imag = canvas_fft(nFFT, fs, win, channels1_td, ove
 
 # STEP 4 ----------------------- CALC PWR --------------------------------
 # calculate power, diff for spectra and x-spec
-spec_pwr0 = fft_spec_power(channel0_fd_real, channel0_fd_imag, channel_num=0, show_plots=False, save_output='both')
-spec_pwr1 = fft_spec_power(channel1_fd_real, channel1_fd_imag, channel_num=1, show_plots=False, save_output='both')
-xspec_pwr_r, xspec_pwr_i = fft_spec_power(channel0_fd_real, channel0_fd_imag, channel1_fd_real, channel1_fd_imag, channel_nums=[0,1], show_plots=False, save_output='both')
 
+#f_ar, f_ai = read_FPGA_input_lines('fft_fbin_pwr.txt', 32, 4, 1, 2)
+
+spec_pwr0 = fft_spec_power(channel0_fd_real, channel0_fd_imag, channel_num=0, show_plots=True, save_output='both')
+spec_pwr1 = fft_spec_power(channel1_fd_real, channel1_fd_imag, channel_num=1, show_plots=True, save_output='both')
+xspec_pwr_r, xspec_pwr_i = fft_xspec_power(channel0_fd_real, channel0_fd_imag, channel1_fd_real, channel1_fd_imag, channel_nums=[0,1], show_plots=False, save_output='both')
+
+#spec_pwr0 = fft_spec_power(f_ar, f_ai, channel_num=0, show_plots=True, save_output='both')
+#spec_pwr1 = fft_spec_power(f_ar, f_ai, channel_num=1, show_plots=True, save_output='both')
+#xspec_pwr_r, xspec_pwr_i = fft_spec_power([channel0_fd_real], [channel0_fd_imag], [channel1_fd_real], [channel1_fd_imag], channel_nums=[0,1], show_plots=False, save_output='both')
 # STEP 5 -------------------- rebin and acc -------------------------------
 # functions written to rebin (avg in freq) and acc (avg in time)
 rebin_pwr0= rebin_likefpga(spec_pwr0, channel_num=0, show_plots=False, save_output='both')

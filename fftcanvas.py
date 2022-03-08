@@ -82,8 +82,8 @@ def canvas_fft(nFFT, fs, win, channel_td, overlap=True, channel_num=0, show_plot
     channels_fd_real = c_fd_r
     channels_fd_imag = c_fd_i
 
-    channels_fd_real = flatten(channels_fd_real)
-    channels_fd_imag = flatten(channels_fd_imag)
+    #channels_fd_real = flatten(channels_fd_real)
+    #channels_fd_imag = flatten(channels_fd_imag)
 
     return channels_fd_real, channels_fd_imag
 # ------------------------------------------------------------------------------------

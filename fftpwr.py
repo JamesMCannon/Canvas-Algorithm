@@ -11,20 +11,12 @@ from saveas import save_output_txt
 
 # ---------------------------- Compute Power of Spectra -------------------------------
 def fft_spec_power(real_data, imag_data, channel_num=0, show_plots=False, save_output='both', out_folder='output'):
-
-    spec_pwr = np.zeros_like(real_data)
+    spec_pwr = np.zeros_like(real_data,dtype=np.int64)
 
     for ind, (r,i) in enumerate(zip(real_data, imag_data)):
-        r = np.array(r)
-        i = np.array(i)
-
+        r = np.array(r,dtype=np.int64)
+        i = np.array(i,dtype=np.int64)
         sp = r**2 + i**2
-
-        if show_plots:
-            plt.plot(np.log10(sp),'.')
-            plt.title('spectra power')
-            plt.show()
-            plt.close()
 
         if save_output:
             out_path = out_folder+'/channel'+str(channel_num)+'_spectra'
@@ -32,14 +24,20 @@ def fft_spec_power(real_data, imag_data, channel_num=0, show_plots=False, save_o
 
         spec_pwr[ind] = sp
 
+    if show_plots:
+        plt.plot(np.log10(spec_pwr[512]))
+        plt.title('spectra power')
+        plt.show()
+        plt.close()
+
     return spec_pwr
 # -------------------------------------------------------------------------------------
 
 # ---------------------------- Compute Power of XSpectra -------------------------------
 def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, channel_nums=[0,1], show_plots=False, save_output='both', out_folder='output'):
 
-    xspec_pwr_r = np.zeros_like(c1_real_data)
-    xspec_pwr_i = np.zeros_like(c1_imag_data)
+    xspec_pwr_r = np.zeros_like(c1_real_data,dtype=np.int64)
+    xspec_pwr_i = np.zeros_like(c1_imag_data,dtype=np.int64)
 
     # diff channel: R = real1*real2 + imag1*imag2 , I = real1*imag2 - real2*imag1
     for ind, (r1, i1, r2, i2) in enumerate(zip(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data)):
