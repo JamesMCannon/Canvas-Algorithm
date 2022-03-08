@@ -11,22 +11,25 @@ from readFPGA import flatten
 def rebin_likefpga(pwr, channel_num=0, show_plots=False, save_output=False, out_folder='output'):
     
     rebin_pwr = []
-    for p in range(0,len(pwr),512):
-        rp = pwr[2+p:332+p]
 
-        if show_plots:
-            plt.plot(np.log10(rebin_pwr),'.')
-            plt.title('rebin power')
-            plt.show()
-            plt.close()
+    for p in pwr:
+        rp = p[2:332]
+
 
         if save_output:
             out_path = out_folder+'/channel'+str(channel_num)+'_rebin'
+            print(np.shape(rp))
+            print(type(rp[1][1]))
             save_output_txt(rp, out_path, save_output, 'u-64')
         
         rebin_pwr.append(rp)
-
-    rebin_pwr = flatten(rebin_pwr)
+    print(np.shape(rebin_pwr))
+    if show_plots:
+            plt.plot(np.log10(rebin_pwr[0]))
+            plt.title('rebin power')
+            plt.show()
+            plt.close()
+    
 
     return rebin_pwr 
 # ------------------------------------------------------------------------------------

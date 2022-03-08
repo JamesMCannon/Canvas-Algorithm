@@ -25,7 +25,7 @@ def fft_spec_power(real_data, imag_data, channel_num=0, show_plots=False, save_o
         spec_pwr[ind] = sp
 
     if show_plots:
-        plt.plot(np.log10(spec_pwr[512]))
+        plt.plot(np.log10(spec_pwr[0]))
         plt.title('spectra power')
         plt.show()
         plt.close()
@@ -50,8 +50,8 @@ def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, chan
         xspec_pwr_i[ind] = r2 * i1 - (r1 * i2)
 
     if show_plots:
-        plt.plot(np.log10(xspec_pwr_r),'.',label='real')
-        plt.plot(np.log10(xspec_pwr_i),'.',label='imag')
+        plt.plot(np.log10(xspec_pwr_r),label='real')
+        plt.plot(np.log10(xspec_pwr_i),label='imag')
         plt.title('xspectra power')
         plt.legend()
         plt.show()
