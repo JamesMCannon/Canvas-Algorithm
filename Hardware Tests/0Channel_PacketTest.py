@@ -12,10 +12,10 @@ MIN_VALUE_OF_16_BIT_INT = -1 * (2 ** (16 - 1)) # most negative for two's complem
 ack = '\x06'
 lf = '\x0A'
 
-s1 = '\x1A'
-s2= '\xCF'
-s3 = '\xFC'
-s4 = '\x1D'
+s1 = b'\x1A'
+s2= b'\xCF'
+s3 = b'\xFC'
+s4 = b'\x1D'
 
 pic_ser = serial.Serial("COM3",115200)
 FPGA_ser = serial.Serial("")
@@ -56,16 +56,16 @@ print(val)
 
 #Synchronize with expected packet
 val = ''
-val+=wait4byte(FPGA_ser,s1)
+val+=wait4byte(FPGA_ser,s1,False)
 print('First Sync byte recieved: ')
 print(val)
-val+=wait4byte(FPGA_ser,s2)
+val+=wait4byte(FPGA_ser,s2,False)
 print('Second Sync byte recieved: ')
 print(val)
-val+=wait4byte(FPGA_ser,s3)
+val+=wait4byte(FPGA_ser,s3,False)
 print('Third Sync byte recieved: ')
 print(val)
-val+=wait4byte(FPGA_ser,s4)
+val+=wait4byte(FPGA_ser,s4,False)
 print('Fourth Sync byte recieved: ')
 print(val)
 

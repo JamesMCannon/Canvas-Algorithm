@@ -52,7 +52,7 @@ channel0_fd_real, channel0_fd_imag = canvas_fft(nFFT, fs, win, channels0_td, ove
 
 #f_ar, f_ai = read_FPGA_input_lines('fft_fbin_pwr.txt', 32, 4, 1, 2)
 
-spec_pwr0 = fft_spec_power(channel0_fd_real, channel0_fd_imag, channel_num=0, show_plots=True, save_output='both')
+spec_pwr0 = fft_spec_power(channel0_fd_real, channel0_fd_imag, channel_num=0, show_plots=False, save_output='both')
 #spec_pwr1 = fft_spec_power(channel1_fd_real, channel1_fd_imag, channel_num=1, show_plots=False, save_output='both')
 #xspec_pwr_r, xspec_pwr_i = fft_xspec_power(channel0_fd_real, channel0_fd_imag, channel1_fd_real, channel1_fd_imag, channel_nums=[0,1], show_plots=True, save_output='both')
 

@@ -37,8 +37,8 @@ def rebin_likefpga(pwr, channel_num=0, show_plots=False, save_output=False, out_
 # ------------------------- acc like the FPGA ------------------------------------
 def acc_likefpga(rebin_pwr, n_acc, channel_num=0, show_plots=False, save_output='both', out_folder='output'):
     
-    acc_f2 = np.zeros((len(rebin_pwr)//(330*n_acc),330))
-    for i in range(0,len(rebin_pwr)//(330*n_acc)):
+    acc_f2 = np.zeros((len(rebin_pwr)//(n_acc),330))
+    for i in range(0,len(rebin_pwr)//(n_acc)):
         print(i)
         for k in range(330):
             argh = []
@@ -50,8 +50,9 @@ def acc_likefpga(rebin_pwr, n_acc, channel_num=0, show_plots=False, save_output=
                 mysum+=int(ar)
             thatval = mysum
             acc_f2[i][k] = thatval
+    print(np.shape(acc_f2))
     if show_plots:
-        plt.plot(np.log10(acc_pwr),'.')
+        plt.plot(np.log10(acc_f2))
         plt.title('acc power')
         plt.show()
         plt.close()
