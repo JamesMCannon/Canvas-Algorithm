@@ -5,3 +5,5 @@ FPGA/*
 __pycache__/*
 canalg_env/*
 !requirements.txt
+.vs/*
+Hardware Tests/__pycache__/*
