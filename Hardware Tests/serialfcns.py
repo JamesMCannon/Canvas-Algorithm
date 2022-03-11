@@ -7,7 +7,8 @@ def wait4byte(ser,ack):
     val = ''
     while ack_read == False:
         v = ser.read()
-        val = v.decode('ascii')
+        val = v
+        val = v.decode('utf-8')
         if val == ack:
             ack_read = True
     return val

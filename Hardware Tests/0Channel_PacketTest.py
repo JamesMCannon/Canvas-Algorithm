@@ -17,8 +17,8 @@ s2= '\xCF'
 s3 = '\xFC'
 s4 = '\x1D'
 
-pic_ser = serial.Serial("COM3",115200)
-FPGA_ser = serial.Serial("")
+pic_ser = serial.Serial("COM4",115200)
+FPGA_ser = serial.Serial("COM3",115200)
 
 #define pic packet headers
 SetConfig = '\x01'
@@ -40,6 +40,8 @@ Algorithm_Testing = '\x03'
 #configure PIC
 pic_ser.write(bytes(SetConfig , 'utf-8'))
 pic_ser.write(bytes(TX_Packet_Gen , 'utf-8'))
+#pic_ser.write(bytes(GSE_Loopback,'utf-8'))
+pic_ser.write(bytes(lf, 'utf-8'))
 
 #Wait for acknowledge
 val=wait4byte(pic_ser,ack)
@@ -48,6 +50,7 @@ print(val)
 
 #start
 pic_ser.write(bytes(StartFPGA , 'utf-8'))
+pic_ser.write(bytes(lf, 'utf-8'))
 
 #Wait for acknowledge
 val=wait4byte(pic_ser,ack)
