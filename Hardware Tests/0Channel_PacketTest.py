@@ -17,8 +17,8 @@ s2= b'\xCF'
 s3 = b'\xFC'
 s4 = b'\x1D'
 
-pic_ser = serial.Serial("COM4",115200)
-FPGA_ser = serial.Serial("COM3",115200)
+pic_ser = serial.Serial("COM3",115200)
+FPGA_ser = serial.Serial("COM4",115200)
 
 #define pic packet headers
 SetConfig = '\x01'
@@ -58,37 +58,36 @@ print('Recieved command: ')
 print(val)
 
 #Synchronize with expected packet
-val = ''
-val+=wait4byte(FPGA_ser,s1,False)
+
+r1=wait4byte(FPGA_ser,s1,False)
 print('First Sync byte recieved: ')
-print(val)
-val+=wait4byte(FPGA_ser,s2,False)
+print(r1)
+r2=wait4byte(FPGA_ser,s2,False)
 print('Second Sync byte recieved: ')
-print(val)
-val+=wait4byte(FPGA_ser,s3,False)
+print(r2)
+r3=wait4byte(FPGA_ser,s3,False)
 print('Third Sync byte recieved: ')
-print(val)
-val+=wait4byte(FPGA_ser,s4,False)
+print(r3)
+r4=wait4byte(FPGA_ser,s4,False)
 print('Fourth Sync byte recieved: ')
-print(val)
+print(r4)
 
 #extract header info
 header = FPGA_ser.read(2)
-print(header)#check header
 payload_len = FPGA_ser.read(2)
-length = int.from_bytes(payload_len,'big') -1 #'big' => most significant byte is at the beginning of the byte array
-print(length) #check data length
-word_length = length/4
-print(word_length) #check work length
+length = int.from_bytes(payload_len,'big') +1 #'big' => most significant byte is at the beginning of the byte array
+word_length = int(length/4)
+print('Words in current packet:',word_length) #check work length
 
 #read in payload in 4-byte words
-vals = np.zeros(word_length,1)
-for i in word_length:
+vals = np.zeros(word_length)
+for i in range(word_length):
     v=FPGA_ser.read(4)
     vals[i] = int.from_bytes(v,'big')
 
 #save data
-np.savetxt('TestFile.csv', vals, delimiter=',')
-print(v) #Let's look at the last datum
+#np.savetxt('TestFile.csv', vals, delimiter=',')
+v=int(vals[0])
+print('First Entry: ',v.to_bytes(4, byteorder='big')) #Let's look at the last datum
 
 

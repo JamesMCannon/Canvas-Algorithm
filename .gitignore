@@ -7,3 +7,4 @@ canalg_env/*
 !requirements.txt
 .vs/*
 Hardware Tests/__pycache__/*
+Hardware Tests/Results/*
