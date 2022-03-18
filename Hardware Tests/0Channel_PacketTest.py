@@ -12,10 +12,15 @@ MIN_VALUE_OF_16_BIT_INT = -1 * (2 ** (16 - 1)) # most negative for two's complem
 ack = '\x06'
 lf = '\x0A'
 
-s1 = b'\x1A'
-s2= b'\xCF'
-s3 = b'\xFC'
-s4 = b'\x1D'
+#s1 = b'\x1A'
+#s2= b'\xCF'
+#s3 = b'\xFC'
+#s4 = b'\x1D'
+
+s1 = b'\x35'
+s2= b'\x2E'
+s3 = b'\xF8'
+s4 = b'\x53'
 
 pic_ser = serial.Serial("COM3",115200)
 FPGA_ser = serial.Serial("COM4",115200)

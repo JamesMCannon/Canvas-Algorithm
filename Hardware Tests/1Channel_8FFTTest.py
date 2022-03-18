@@ -25,10 +25,10 @@ n_acc = 8                   # number of FFTs to accummulate
 ack = '\x06'
 lf = '\x0A'
 
-s1 = b'\x1A'
-s2= b'\xCF'
-s3 = b'\xFC'
-s4 = b'\x1D'
+s1 = b'\x35'
+s2= b'\x2E'
+s3 = b'\xF8'
+s4 = b'\x53'
 
 #define pic packet headers
 SetConfig = '\x01'
