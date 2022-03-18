@@ -30,7 +30,7 @@ shift0 = 0                  # phase shift in radians
 shift1 = 0                  # phase shift in radians
 sample_len = 1              # seconds
 nFFT = 1024                 # length of FFT
-n_acc = 256                 # number of FFTs to accummulate
+n_acc = 8                   # number of FFTs to accummulate
 
 # STEP 1 -------------------- GENERATE INPUT ----------------------------- 
 # get one or two test singals

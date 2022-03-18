@@ -1,6 +1,8 @@
+from matplotlib.cbook import flatten
 import numpy as np
 import matplotlib.pyplot as plt
 
+from readFPGA import flatten
 from saveas import save_output_txt
 
 # function to take spectra and xspectra power
@@ -11,6 +13,14 @@ from saveas import save_output_txt
 
 # ---------------------------- Compute Power of Spectra -------------------------------
 def fft_spec_power(real_data, imag_data, channel_num=0, show_plots=False, save_output='both', out_folder='output'):
+    
+    #reshape into n x 512 arrays where n is number of samples (256 for 1 second)
+    real_data = np.asarray(real_data)
+    real_data = real_data.reshape(-1,512)
+
+    imag_data = np.asarray(imag_data)
+    imag_data = imag_data.reshape(-1,512)
+    
     spec_pwr = np.zeros_like(real_data,dtype=np.int64)
 
     for ind, (r,i) in enumerate(zip(real_data, imag_data)):
@@ -30,11 +40,25 @@ def fft_spec_power(real_data, imag_data, channel_num=0, show_plots=False, save_o
         plt.show()
         plt.close()
 
+    spec_pwr = flatten(spec_pwr) #from n x 512 to (n*512) x 1
     return spec_pwr
 # -------------------------------------------------------------------------------------
 
 # ---------------------------- Compute Power of XSpectra -------------------------------
 def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, channel_nums=[0,1], show_plots=False, save_output='both', out_folder='output'):
+
+    c1_real_data = np.asarray(c1_real_data)
+    c1_real_data = c1_real_data.reshape(-1,512)
+
+    c1_imag_data = np.asarray(c1_imag_data)
+    c1_imag_data = c1_imag_data.reshape(-1,512)
+
+    c2_real_data = np.asarray(c2_real_data)
+    c2_real_data = c2_real_data.reshape(-1,512)
+
+    c2_imag_data = np.asarray(c1_imag_data)
+    c2_imag_data = c2_imag_data.reshape(-1,512)
+
 
     xspec_pwr_r = np.zeros_like(c1_real_data,dtype=np.int64)
     xspec_pwr_i = np.zeros_like(c1_imag_data,dtype=np.int64)

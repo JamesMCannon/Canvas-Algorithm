@@ -80,10 +80,10 @@ def canvas_fft(nFFT, fs, win, channel_td, overlap=True, channel_num=0, show_plot
 
     # save the output for each channel - vector of 1024-pt FFTs
     channels_fd_real = c_fd_r
-    channels_fd_imag = c_fd_i
+    channels_fd_imag = c_fd_i #time(1 second) x frequency (512 frequencies)
 
-    #channels_fd_real = flatten(channels_fd_real)
-    #channels_fd_imag = flatten(channels_fd_imag)
+    channels_fd_real = flatten(channels_fd_real)
+    channels_fd_imag = flatten(channels_fd_imag)
 
     return channels_fd_real, channels_fd_imag
 # ------------------------------------------------------------------------------------

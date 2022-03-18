@@ -86,7 +86,7 @@ for i in range(word_length):
     vals[i] = int.from_bytes(v,'big')
 
 #save data
-#np.savetxt('TestFile.csv', vals, delimiter=',')
+np.savetxt('TestFile.csv', vals, delimiter=',')
 v=int(vals[0])
 print('First Entry: ',v.to_bytes(4, byteorder='big')) #Let's look at the last datum
 

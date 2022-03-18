@@ -8,3 +8,4 @@ canalg_env/*
 .vs/*
 Hardware Tests/__pycache__/*
 Hardware Tests/Results/*
+!CANVAS_fbins/*
