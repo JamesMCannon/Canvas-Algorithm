@@ -73,7 +73,9 @@ def test_signal(fs, sample_len, freq, amp, shift=0, channel_num=0, show_plots=Fa
     
     channels_td_raw = amp * np.sin(freq * 2 * np.pi * t_vec + shift)
 
-    channels_td =  [round(c,0) for c in channels_td_raw] # rounded to be 16 bit signed input
+    channels_td_rd =  [round(c,0) for c in channels_td_raw] # rounded to be nearest int
+
+    channels_td = [int(c) for c in channels_td_rd] #cast to (16 bit) signed input
 
     if show_plots:
         plt_chk = int(len(channels_td))
