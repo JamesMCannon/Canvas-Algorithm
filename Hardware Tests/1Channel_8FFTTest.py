@@ -1,3 +1,4 @@
+from encodings import utf_8
 from multiprocessing.connection import wait
 from os import linesep
 import sys
@@ -36,6 +37,7 @@ Data = '\x02'
 ResetPIC = '\x03'
 StartFPGA = '\x04'
 StopFPGA = '\x05'
+SetLength = '\x06' #takes payload of uint32
 
 #define pic SetConfig payloads
 Nominal = '\x00'
@@ -43,7 +45,7 @@ GSE_Loopback = '\x01'
 TX_Packet_Gen = '\x02'
 Algorithm_Testing = '\x03'
 
-channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output=None)
+channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output='both')
 print(len(channels0_td))
 
 pic_ser = serial.Serial("COM3",115200)
@@ -56,13 +58,26 @@ FPGA_ser = serial.Serial("COM4",115200)
 #configure PIC
 pic_ser.write(bytes(SetConfig , 'utf-8'))
 pic_ser.write(bytes(Algorithm_Testing , 'utf-8'))
-#other command/payload?
 pic_ser.write(bytes(lf, 'utf-8'))
 
 #Wait for acknowledge
 val=wait4byte(pic_ser,ack)
 print('Recieved command: ')
 print(val)     
+
+
+#buffer data
+for i in channels0_td:
+    pic_ser.write(bytes(Data, 'utf_8'))
+    val = channels0_td[i].to_bytes(2,byteorder='big',signed=True)
+    pic_ser.write(val)
+    pic_ser.write(',','utf-8')
+    pic_ser.write(val)
+    pic_ser.write(bytes(lf, 'utf-8'))
+
+    val=wait4byte(pic_ser,ack)
+
+print('Data buffered')
 
 #start
 pic_ser.write(bytes(StartFPGA , 'utf-8'))
@@ -72,9 +87,6 @@ pic_ser.write(bytes(lf, 'utf-8'))
 val=wait4byte(pic_ser,ack)
 print('Recieved command: ')
 print(val)
-
-#When to send buffer data?
-
 #Synchronize with expected packet
 
 r1=wait4byte(FPGA_ser,s1,False)
