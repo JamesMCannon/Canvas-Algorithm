@@ -41,7 +41,8 @@ TX_Packet_Gen = '\x02'
 Algorithm_Testing = '\x03'
 
 channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output='both')
-print(len(channels0_td))
+num_samples = len(channels0_td)
+print(len(num_samples))
 
 pic_ser = serial.Serial("COM3",115200)
 FPGA_ser = serial.Serial("COM4",115200)
@@ -57,17 +58,25 @@ pic_ser.write(bytes(lf, 'utf-8'))
 
 #Wait for acknowledge
 val=wait4byte(pic_ser,ack)
-print('Recieved command: ')
-print(val)     
+print('FPGA Configured')
 
+
+#Set number of samples to be buffered
+pic_ser.write(bytes(SetLength, 'utf-8'))
+pic_ser.write(num_samples.to_bytes(4,'big',signed=False))
+pic_ser.write(bytes(lf, 'utf-8'))
+
+#Wait for acknowledge
+val=wait4byte(pic_ser,ack)
+print('Data Lenght Set')
 
 #buffer data
 for i in channels0_td:
     pic_ser.write(bytes(Data, 'utf_8'))
     val = channels0_td[i].to_bytes(2,byteorder='big',signed=True)
-    pic_ser.write(val)
+    pic_ser.write(val) #buffer ADC1
     pic_ser.write(',','utf-8')
-    pic_ser.write(val)
+    pic_ser.write(val) #buffer ADC2
     pic_ser.write(bytes(lf, 'utf-8'))
 
     val=wait4byte(pic_ser,ack)
@@ -80,9 +89,7 @@ pic_ser.write(bytes(lf, 'utf-8'))
 
 #Wait for acknowledge
 val=wait4byte(pic_ser,ack)
-print('Recieved command: ')
-print(val)
-#Synchronize with expected packet
+print('FPGA Started')
 
 vals = readFPGA(ser)
 
