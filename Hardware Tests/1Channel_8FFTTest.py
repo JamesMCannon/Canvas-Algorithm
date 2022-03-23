@@ -56,11 +56,7 @@ num_samples = 5
 test = channels0_td[0:num_samples]
 
 pic_ser = serial.Serial("COM4",115200)
-#FPGA_ser = serial.Serial("COM4",115200)
-
-#reset devices
-#pic_ser.write(bytes(ResetPIC , 'utf-8'))
-#pic_ser.write(bytes(ResetFPGA , 'utf-8'))
+FPGA_ser = serial.Serial("COM4",115200)
 
 #configure PIC
 pic_ser.write(bytes(SetConfig , 'utf-8'))
@@ -70,7 +66,6 @@ pic_ser.write(bytes(lf, 'utf-8'))
 #Wait for acknowledge
 val=wait4byte(pic_ser,ack)
 print('FPGA Configured')
-
 
 #Set number of samples to be buffered
 pic_ser.write(bytes(SetLength, 'utf-8'))
@@ -104,7 +99,6 @@ while send_complete == False:
         send_complete = True
         print(val)
 '''
-
 print('Data buffered')
 
 #start
@@ -115,7 +109,7 @@ pic_ser.write(bytes(lf, 'utf-8'))
 val=wait4byte(pic_ser,ack)
 print('FPGA Started')
 
-#vals = readFPGA(FPGA_ser)
+vals = readFPGA(FPGA_ser)
 
 #save data
 np.savetxt('TestFile.csv', vals, delimiter=',')

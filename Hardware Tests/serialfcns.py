@@ -34,7 +34,7 @@ def readFPGA(ser):
     acc_power = b'\x06'   
     spec_result = b'\x07'
 
-    check = b'\x0f' 
+   
 
     #define sycn bytes
     s1 = b'\x35'
@@ -55,7 +55,8 @@ def readFPGA(ser):
     payload_len = ser.read(2)
     length = int.from_bytes(payload_len,'big') +1 #'big' => most significant byte is at the beginning of the byte array
 
-    test_mode = bytes([test_mode[0] & check[0]])
+    mask = b'\x0f' 
+    test_mode = bytes([test_mode[0] & mask[0]])
 
     if test_mode==tx_packet_gen:
         print("tx_packet_gen")
