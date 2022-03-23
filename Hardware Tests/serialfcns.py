@@ -7,7 +7,7 @@ def wait4byte(ser,ack,is_ascii=True,timeout=10):
     
     ack_read = False
     val = ''
-    start = time.perf_counter()
+    #start = time.perf_counter()
     while ack_read == False:
         v = ser.read()
         if is_ascii:
@@ -17,8 +17,10 @@ def wait4byte(ser,ack,is_ascii=True,timeout=10):
         if val == ack:
             ack_read = True
         else:
-            curr_time = time.perf_counter
-            t_diff = curr_time-start
+            #curr_time = time.perf_counter
+            #print(curr_time)
+            #t_diff = curr_time-start
+            t_diff = 5
             if t_diff>timeout:
                 raise Exception("Timeout Error")
     return val

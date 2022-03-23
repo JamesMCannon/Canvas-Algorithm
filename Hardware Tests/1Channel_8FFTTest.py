@@ -23,8 +23,12 @@ shift0 = 0                  # phase shift in radians
 sample_len = 0.5             # seconds
 nFFT = 1024                 # length of FFT
 n_acc = 8                   # number of FFTs to accummulate
+
+#misc PIC commands
 ack = '\x06'
 lf = '\x0A'
+delim = '\x2C'
+complete = '\nReady.'
 
 #define pic packet headers
 SetConfig = '\x01'
@@ -38,14 +42,21 @@ SetLength = '\x06' #takes payload of uint32
 Nominal = '\x00'
 GSE_Loopback = '\x01'
 TX_Packet_Gen = '\x02'
-Algorithm_Testing = '\x03'
+Rotation = '\x03'
+FFT_result = '\x04'
+Power_calc = '\x05'
+
+Spectra_result = '\x07'
 
 channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output='both')
 num_samples = len(channels0_td)
-print(len(num_samples))
+print(num_samples)
 
-pic_ser = serial.Serial("COM3",115200)
-FPGA_ser = serial.Serial("COM4",115200)
+num_samples = 5
+test = channels0_td[0:num_samples]
+
+pic_ser = serial.Serial("COM4",115200)
+#FPGA_ser = serial.Serial("COM4",115200)
 
 #reset devices
 #pic_ser.write(bytes(ResetPIC , 'utf-8'))
@@ -53,7 +64,7 @@ FPGA_ser = serial.Serial("COM4",115200)
 
 #configure PIC
 pic_ser.write(bytes(SetConfig , 'utf-8'))
-pic_ser.write(bytes(Algorithm_Testing , 'utf-8'))
+pic_ser.write(bytes(Spectra_result , 'utf-8'))
 pic_ser.write(bytes(lf, 'utf-8'))
 
 #Wait for acknowledge
@@ -68,18 +79,31 @@ pic_ser.write(bytes(lf, 'utf-8'))
 
 #Wait for acknowledge
 val=wait4byte(pic_ser,ack)
-print('Data Lenght Set')
+print('Data Length Set')
 
 #buffer data
-for i in channels0_td:
+for i in test:
     pic_ser.write(bytes(Data, 'utf_8'))
-    val = channels0_td[i].to_bytes(2,byteorder='big',signed=True)
+    val = i.to_bytes(2,byteorder='big',signed=True)
     pic_ser.write(val) #buffer ADC1
-    pic_ser.write(',','utf-8')
+    pic_ser.write(bytes(delim, 'utf-8'))
     pic_ser.write(val) #buffer ADC2
     pic_ser.write(bytes(lf, 'utf-8'))
 
     val=wait4byte(pic_ser,ack)
+
+#check for complete from PIC
+
+send_complete = False
+
+'''
+while send_complete == False:
+    v = pic_ser.read()
+    val += v.decode('ascii')
+    if val == complete:
+        send_complete = True
+        print(val)
+'''
 
 print('Data buffered')
 
@@ -91,7 +115,7 @@ pic_ser.write(bytes(lf, 'utf-8'))
 val=wait4byte(pic_ser,ack)
 print('FPGA Started')
 
-vals = readFPGA(ser)
+#vals = readFPGA(FPGA_ser)
 
 #save data
 np.savetxt('TestFile.csv', vals, delimiter=',')
