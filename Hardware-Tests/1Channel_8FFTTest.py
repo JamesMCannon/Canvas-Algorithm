@@ -45,7 +45,7 @@ TX_Packet_Gen = '\x02'
 Rotation = '\x03'
 FFT_result = '\x04'
 Power_calc = '\x05'
-
+Acc_power = '\x06'
 Spectra_result = '\x07'
 
 channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output='both')
