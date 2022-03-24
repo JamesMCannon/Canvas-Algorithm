@@ -22,8 +22,8 @@ for f in files:
 
 # some set up parameters
 fs = 131072.                # sampling freq. in Hz
-signal_freq0 = 35e3         # signal freq. 1 in Hz
-signal_freq1 = 35e3         # signal freq. 2 in Hz
+signal_freq0 = fs/4         # signal freq. 1 in Hz
+signal_freq1 = 30e3         # signal freq. 2 in Hz
 amp0 = 2**15                # amplitudes (in ADC units)
 amp1 = 2**15                # amplitudes (in ADC units)
 shift0 = 0                  # phase shift in radians
@@ -89,7 +89,7 @@ avg_pwr0 = rebin_canvas(acc_pwr0, n_acc, c_fbins, center_freqs, tx_bins=True, ch
 
 # STEP 7 ---------------- compress -------------------------
 # use spec compress or xspec compress for log2 compression
-cpmrs_val0 = spec_compress(avg_pwr0, channel_num=0, show_plots=True, save_output='both')
+#cpmrs_val0 = spec_compress(avg_pwr0, channel_num=0, show_plots=True, save_output='both')
 #cpmrs_val1 = spec_compress(avg_pwr1, channel_num=1, show_plots=False, save_output='both')
 
 #cmprs_val_r = xspec_compress(avg_pwr01_r, channel_num=0, show_plots=False, save_output='both')
