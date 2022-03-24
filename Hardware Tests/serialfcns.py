@@ -91,7 +91,7 @@ def readFPGA(ser):
     if test_mode==tx_packet_gen:
         raise Exception("Packet Gen not yet supported")
     elif test_mode == rotation:
-        raise Exception("Rotation Data Product not yet supported")
+        vals = readRotate(words,ser)
     elif test_mode == fft_result:
         vals = readFFT(words,ser)
     elif test_mode == power_calc:
@@ -103,6 +103,23 @@ def readFPGA(ser):
     else:
         raise Exception("Unexpected Test Mode")
 
+    return vals
+
+def readRotate(words,ser):
+    vals = np.zeros(words,5)
+    for i in range(words):
+        sample = int.from_bytes(ser.read(2), 'big')
+        unused = ser.read(2)
+        adc2_r = int.from_bytes(ser.read(2), 'big')
+        adc1_r = int.from_bytes(ser.read(2),'big')
+        adc2 = int.from_bytes(ser.read(2), 'big')
+        adc1 = int.from_bytes(ser.read(2), 'big')
+
+        vals[i][0] = sample
+        vals[i][1] = adc2_r
+        vals[i][2] = adc1_r
+        vals[i][3] = adc2
+        vals[i][4] = adc1
     return vals
 
 

@@ -34,17 +34,17 @@ n_acc = 8                   # number of FFTs to accummulate
 
 # STEP 1 -------------------- GENERATE INPUT ----------------------------- 
 # get one or two test singals
-channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output='both')
+channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=True, save_output='both')
 #channels1_td = test_signal(fs, sample_len, signal_freq1, amp1, shift=shift1, channel_num=1, show_plots=False, save_output='both')
 
 # STEP 2 ----------------- GET HANNING WINDOW ----------------------------
 # get a window based on IDL code
-win = get_win(nFFT, show_plots=False, save_output=None)
+win = get_win(nFFT, show_plots=True, save_output=None)
 
 # STEP 3 ----------------------- TAKE FFT --------------------------------
 # take fft on each channel
 
-channel0_fd_real, channel0_fd_imag = canvas_fft(nFFT, fs, win, channels0_td, overlap=True,  channel_num=0, show_plots=False, save_output='both')
+channel0_fd_real, channel0_fd_imag = canvas_fft(nFFT, fs, win, channels0_td, overlap=True,  channel_num=0, show_plots=True, save_output='both')
 #channel1_fd_real, channel1_fd_imag = canvas_fft(nFFT, fs, win, channels1_td, overlap=True,  channel_num=1, show_plots=False, save_output='both')
 
 # STEP 4 ----------------------- CALC PWR --------------------------------
@@ -52,7 +52,7 @@ channel0_fd_real, channel0_fd_imag = canvas_fft(nFFT, fs, win, channels0_td, ove
 
 #f_ar, f_ai = read_FPGA_input_lines('fft_fbin_pwr.txt', 32, 4, 1, 2)
 
-spec_pwr0 = fft_spec_power(channel0_fd_real, channel0_fd_imag, channel_num=0, show_plots=False, save_output='both')
+spec_pwr0 = fft_spec_power(channel0_fd_real, channel0_fd_imag, channel_num=0, show_plots=True, save_output='both')
 #spec_pwr1 = fft_spec_power(channel1_fd_real, channel1_fd_imag, channel_num=1, show_plots=False, save_output='both')
 #xspec_pwr_r, xspec_pwr_i = fft_xspec_power(channel0_fd_real, channel0_fd_imag, channel1_fd_real, channel1_fd_imag, channel_nums=[0,1], show_plots=True, save_output='both')
 

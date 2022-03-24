@@ -1,8 +1,8 @@
 from encodings import utf_8
 from multiprocessing.connection import wait
-from os import linesep
+import os
 import sys
-sys.path.append('C:/Users/James/Documents/Canvas/Canvas-Algorithm/') #import functions from parent folder
+sys.path.insert(1, os.path.join(sys.path[0], '..')) #import functions from parent folder
 import serial #import serial library
 import time
 import numpy as np
@@ -52,11 +52,11 @@ channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, cha
 num_samples = len(channels0_td)
 print(num_samples)
 
-num_samples = 5
+#num_samples = 5
 test = channels0_td[0:num_samples]
 
 pic_ser = serial.Serial("COM4",115200)
-FPGA_ser = serial.Serial("COM4",115200)
+FPGA_ser = serial.Serial("COM3",115200)
 
 #configure PIC
 pic_ser.write(bytes(SetConfig , 'utf-8'))
@@ -88,10 +88,9 @@ for i in test:
     val=wait4byte(pic_ser,ack)
 
 #check for complete from PIC
-
+'''
 send_complete = False
 
-'''
 while send_complete == False:
     v = pic_ser.read()
     val += v.decode('ascii')
