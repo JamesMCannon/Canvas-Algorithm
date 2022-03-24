@@ -85,7 +85,7 @@ def readFPGA(ser):
     else:
         raise Exception("Unexpected Test Mode")
 
-    words = length/word_length
+    words = int(length/word_length)
 
     #read in payload 
     if test_mode==tx_packet_gen:
@@ -106,7 +106,7 @@ def readFPGA(ser):
     return vals
 
 def readRotate(words,ser):
-    vals = np.zeros(words,5)
+    vals = np.zeros((words,5))
     for i in range(words):
         sample = int.from_bytes(ser.read(2), 'big')
         unused = ser.read(2)
@@ -124,7 +124,7 @@ def readRotate(words,ser):
 
 
 def readFFT(words,ser):
-    vals = np.zeros(words,3)
+    vals = np.zeros((words,3))
     for i in range(words):
         cur_bin = int.from_bytes(ser.read(2),'big')
         unused = ser.read(2)
@@ -137,7 +137,7 @@ def readFFT(words,ser):
     return vals
 
 def readPwr(words,ser): #both with power and accumulated power
-    vals = np.zeros(words,2)
+    vals = np.zeros((words,2))
     for i in range(words):
         cur_bin = int.from_bytes(ser.read(2),'big')
         unused = ser.read(2)
@@ -149,12 +149,13 @@ def readPwr(words,ser): #both with power and accumulated power
 
 
 def readSpec(words,ser):
-    vals = np.zeros(words,3)
+    vals = np.zeros((words,3))
     for i in range(words):
         cur_bin = int.from_bytes(ser.read(2),'big')
         v=ser.read(4)
         mask = b'\x0f\xff'
         comp_rst = andbytes(v,mask)
+        comp_rst = int.from_bytes(comp_rst,'big')
         uncomp_rst = int.from_bytes(ser.read(8),'big')
 
         vals[i][0] = cur_bin
