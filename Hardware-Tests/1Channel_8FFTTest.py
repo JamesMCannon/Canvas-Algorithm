@@ -2,7 +2,7 @@ from encodings import utf_8
 from multiprocessing.connection import wait
 import os
 import sys
-sys.path.insert(1, os.path.join(sys.path[0], '..')) #import functions from parent folder
+sys.path.append("..\Canvas-Algorithm") #import functions from parent directory
 import serial #import serial library
 import time
 import numpy as np

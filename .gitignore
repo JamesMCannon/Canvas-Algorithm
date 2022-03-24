@@ -6,6 +6,6 @@ __pycache__/*
 canalg_env/*
 !requirements.txt
 .vs/*
-Hardware Tests/__pycache__/*
-Hardware Tests/Results/*
+Hardware-Tests/__pycache__/*
+Hardware-Tests/Results/*
 !CANVAS_fbins/*
