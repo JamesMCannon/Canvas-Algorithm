@@ -16,8 +16,8 @@ MIN_VALUE_OF_16_BIT_INT = -1 * (2 ** (16 - 1)) # most negative for two's complem
 
 # some set up parameters
 fs = 131072.                # sampling freq. in Hz
-signal_freq0 = 35e3         # signal freq. 1 in Hz
-amp0 = 2**15                # amplitudes (in ADC units)
+signal_freq0 = fs/4         # signal freq. 1 in Hz
+amp0 = 2**15 - 1               # amplitudes (in ADC units)
 amp1 = 2**15                # amplitudes (in ADC units)
 shift0 = 0                  # phase shift in radians
 sample_len = 0.5             # seconds
@@ -48,19 +48,18 @@ Power_calc = '\x05'
 Acc_power = '\x06'
 Spectra_result = '\x07'
 
-channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output='both')
+channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output=None)
 num_samples = len(channels0_td)
 print(num_samples)
-
-#num_samples = 5
+num_samples = 8
 test = channels0_td[0:num_samples]
 
-pic_ser = serial.Serial("COM4",115200)
-FPGA_ser = serial.Serial("COM3",115200)
+pic_ser = serial.Serial("COM5",115200)
+FPGA_ser = serial.Serial("COM4",115200)
 
 #configure PIC
 pic_ser.write(bytes(SetConfig , 'utf-8'))
-pic_ser.write(bytes(Spectra_result , 'utf-8'))
+pic_ser.write(bytes(FFT_result , 'utf-8'))
 pic_ser.write(bytes(lf, 'utf-8'))
 
 #Wait for acknowledge

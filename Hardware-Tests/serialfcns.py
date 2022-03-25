@@ -1,4 +1,5 @@
 
+from tkinter import E
 import serial #import serial library
 import time
 import numpy as np
@@ -86,6 +87,7 @@ def readFPGA(ser):
         raise Exception("Unexpected Test Mode")
 
     words = length/word_length
+    words = 1600
 
     #read in payload 
     if test_mode==tx_packet_gen:
@@ -104,7 +106,7 @@ def readFPGA(ser):
         raise Exception("Unexpected Test Mode")
 
     return vals
-
+'''
 def readRotate(words,ser):
     vals = np.zeros(words,5)
     for i in range(words):
@@ -135,7 +137,7 @@ def readFFT(words,ser):
         vals[i][1] = iFFT
         vals[i][2] = rFFT
     return vals
-
+'''
 def readPwr(words,ser): #both with power and accumulated power
     vals = np.zeros(words,2)
     for i in range(words):
@@ -147,7 +149,7 @@ def readPwr(words,ser): #both with power and accumulated power
         vals[i][1] = pwr
     return vals
 
-
+'''
 def readSpec(words,ser):
     vals = np.zeros(words,3)
     for i in range(words):
@@ -160,6 +162,25 @@ def readSpec(words,ser):
         vals[i][0] = cur_bin
         vals[i][1] = comp_rst
         vals[i][2] = uncomp_rst
+    return vals
+'''
+
+def readFFT(words,ser):
+    vals = np.zeros((words,6))
+    for i in range(words):
+        #v1 = ser.read(4)
+            v1 = ser.read(2)
+            v2 = ser.read(2)
+            v3 = ser.read(2)
+            v4 = ser.read(2)
+            v5 = ser.read(2)
+            v6 = ser.read(2)
+            vals[i][0] = int.from_bytes(v1,'big')
+            vals[i][1] = int.from_bytes(v2,'big')
+            vals[i][2] = int.from_bytes(v3,'big')
+            vals[i][3] = int.from_bytes(v4,'big')
+            vals[i][4] = int.from_bytes(v5,'big')
+            vals[i][5] = int.from_bytes(v6,'big')
     return vals
 
 
