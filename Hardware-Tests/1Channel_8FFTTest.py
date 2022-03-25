@@ -17,12 +17,7 @@ MIN_VALUE_OF_16_BIT_INT = -1 * (2 ** (16 - 1)) # most negative for two's complem
 # some set up parameters
 fs = 131072.                # sampling freq. in Hz
 signal_freq0 = fs/4         # signal freq. 1 in Hz
-<<<<<<< HEAD
-amp0 = 2**15 - 1               # amplitudes (in ADC units)
-amp1 = 2**15                # amplitudes (in ADC units)
-=======
 amp0 = 2**15-1                # amplitudes (in ADC units)
->>>>>>> d06f5f8323e3d54b366f42cbad7db7b4bc0c5738
 shift0 = 0                  # phase shift in radians
 sample_len = 0.5             # seconds
 nFFT = 1024                 # length of FFT
@@ -55,7 +50,7 @@ Spectra_result = '\x07'
 channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output=None)
 num_samples = len(channels0_td)
 print(num_samples)
-num_samples = 8
+#num_samples = 11
 test = channels0_td[0:num_samples]
 
 pic_ser = serial.Serial("COM5",115200)
@@ -72,6 +67,7 @@ print('FPGA Configured')
 
 #Set number of samples to be buffered
 pic_ser.write(bytes(SetLength, 'utf-8'))
+to_Send = num_samples.to_bytes(4,'big',signed=False)
 pic_ser.write(num_samples.to_bytes(4,'big',signed=False))
 pic_ser.write(bytes(lf, 'utf-8'))
 
@@ -80,6 +76,7 @@ val=wait4byte(pic_ser,ack)
 print('Data Length Set')
 
 #buffer data
+var = 0
 for i in test:
     pic_ser.write(bytes(Data, 'utf_8'))
     val = i.to_bytes(2,byteorder='big',signed=True)
@@ -87,7 +84,9 @@ for i in test:
     pic_ser.write(bytes(delim, 'utf-8'))
     pic_ser.write(val) #buffer ADC2
     pic_ser.write(bytes(lf, 'utf-8'))
-
+    if var%1000 == 0:
+        print('buffering ', var)
+    var = var+1
     val=wait4byte(pic_ser,ack)
 
 #check for complete from PIC
