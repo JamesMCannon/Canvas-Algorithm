@@ -113,7 +113,7 @@ pic_ser.write(bytes(lf, 'utf-8'))
 val=wait4byte(pic_ser,ack)
 print('FPGA Started')
 
-vals = readFPGA(FPGA_ser)
+vals = readFPGA(FPGA_ser,readAll=True)
 
 #save data
 np.savetxt('TestFile.csv', vals, delimiter=',')

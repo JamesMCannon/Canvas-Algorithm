@@ -19,7 +19,7 @@ def wait4byte(ser,ack,is_ascii=True):
                 ack_read = True
     return val
 
-def readFPGA(ser):
+def readFPGA(ser, readAll = False):
     #define data modes
     tx_packet_gen = b'\x02'
     rotation = b'\x03'
@@ -48,7 +48,7 @@ def readFPGA(ser):
     test_mode = ser.read(1)
     payload_len = ser.read(2)
     length = int.from_bytes(payload_len,'big') +1 #'big' => most significant byte is at the beginning of the byte array
-
+    length = 16000*12
     mask = b'\x0f' 
     test_mode = bytes([test_mode[0] & mask[0]])
 
@@ -80,10 +80,12 @@ def readFPGA(ser):
         raise Exception("Unexpected Test Mode")
 
     words = length/word_length
-    words = 1600
 
     #read in payload 
-    if test_mode==tx_packet_gen:
+    if readAll:
+        words=1600
+        vals = readAll(words,ser)
+    elif test_mode==tx_packet_gen:
         raise Exception("Packet Gen not yet supported")
     elif test_mode == rotation:
         vals = readRotate(words,ser)
@@ -99,9 +101,9 @@ def readFPGA(ser):
         raise Exception("Unexpected Test Mode")
 
     return vals
-'''
+
 def readRotate(words,ser):
-    vals = np.zeros(words,5)
+    vals = np.zeros((words,5))
     for i in range(words):
         sample = int.from_bytes(ser.read(2), 'big')
         unused = ser.read(2)
@@ -119,7 +121,7 @@ def readRotate(words,ser):
 
 
 def readFFT(words,ser):
-    vals = np.zeros(words,3)
+    vals = np.zeros((words,3))
     for i in range(words):
         cur_bin = int.from_bytes(ser.read(2),'big')
         unused = ser.read(2)
@@ -130,9 +132,9 @@ def readFFT(words,ser):
         vals[i][1] = iFFT
         vals[i][2] = rFFT
     return vals
-'''
+
 def readPwr(words,ser): #both with power and accumulated power
-    vals = np.zeros(words,2)
+    vals = np.zeros((words,2))
     for i in range(words):
         cur_bin = int.from_bytes(ser.read(2),'big')
         unused = ser.read(2)
@@ -142,38 +144,48 @@ def readPwr(words,ser): #both with power and accumulated power
         vals[i][1] = pwr
     return vals
 
-'''
+
 def readSpec(words,ser):
-    vals = np.zeros(words,3)
+    vals = np.zeros((words,3))
     for i in range(words):
         cur_bin = int.from_bytes(ser.read(2),'big')
         v=ser.read(4)
         mask = b'\x0f\xff'
         comp_rst = andbytes(v,mask)
+        comp_rst = int.from_bytes(comp_rst,'big')
         uncomp_rst = int.from_bytes(ser.read(8),'big')
 
         vals[i][0] = cur_bin
         vals[i][1] = comp_rst
         vals[i][2] = uncomp_rst
     return vals
-'''
 
-def readFFT(words,ser):
+def readAll(words,ser): #basic read function, reads in two-byte intervals
+    #todo: change format to output raw hex
     vals = np.zeros((words,6))
+    vals = bytearray()
     for i in range(words):
-        #v1 = ser.read(4)
+            v0 = ser.read(2)
             v1 = ser.read(2)
             v2 = ser.read(2)
             v3 = ser.read(2)
             v4 = ser.read(2)
             v5 = ser.read(2)
-            v6 = ser.read(2)
-            vals[i][0] = int.from_bytes(v1,'big')
-            vals[i][1] = int.from_bytes(v2,'big')
-            vals[i][2] = int.from_bytes(v3,'big')
-            vals[i][3] = int.from_bytes(v4,'big')
-            vals[i][4] = int.from_bytes(v5,'big')
-            vals[i][5] = int.from_bytes(v6,'big')
+
+            vals[i][0] = v0
+            vals[i][1] = v1
+            vals[i][2] = v2
+            vals[i][3] = v3
+            vals[i][4] = v4
+            vals[i][5] = v5
+            '''
+            vals[i][0] = int.from_bytes(v0,'big')
+            vals[i][1] = int.from_bytes(v1,'big')
+            vals[i][2] = int.from_bytes(v2,'big')
+            vals[i][3] = int.from_bytes(v3,'big')
+            vals[i][4] = int.from_bytes(v4,'big')
+            vals[i][5] = int.from_bytes(v5,'big')
+            '''
     return vals
 
 
