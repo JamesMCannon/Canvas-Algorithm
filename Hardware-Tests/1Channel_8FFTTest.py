@@ -32,7 +32,7 @@ complete = '\nReady.'
 #define pic packet headers
 SetConfig = '\x01'
 Data = '\x02'
-ResetPIC = '\x03'
+ResetPIC = '\x03' #Just this, need to wait ~2 seconds after sending command
 StartFPGA = '\x04'
 StopFPGA = '\x05'
 SetLength = '\x06' #takes payload of uint32
@@ -53,7 +53,7 @@ print(num_samples)
 #num_samples = 11
 test = channels0_td[0:num_samples]
 
-pic_ser = serial.Serial("COM5",115200)
+pic_ser = serial.Serial("COM5",460800)
 FPGA_ser = serial.Serial("COM4",115200)
 
 #configure PIC
