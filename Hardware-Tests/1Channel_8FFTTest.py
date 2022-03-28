@@ -25,13 +25,13 @@ n_acc = 8                   # number of FFTs to accummulate
 
 #misc PIC commands
 ack = b'\x06'
-lf = '\x0A'
-delim = '\x2C'
+lf = b'\x0A'
+delim = b'\x2C'
 complete = '\nReady.'
 
 #define pic packet headers
 SetConfig = '\x01'
-Data = '\x02'
+Data = b'\x02'
 ResetPIC = '\x03' #Just this, need to wait ~2 seconds after sending command
 StartFPGA = '\x04'
 StopFPGA = '\x05'
@@ -59,7 +59,7 @@ FPGA_ser = serial.Serial("COM4",115200)
 #configure PIC
 pic_ser.write(bytes(SetConfig , 'utf-8'))
 pic_ser.write(bytes(FFT_result , 'utf-8'))
-pic_ser.write(bytes(lf, 'utf-8'))
+pic_ser.write(lf)
 
 #Wait for acknowledge
 val=wait4byte(pic_ser,ack,is_ascii=False)
@@ -69,7 +69,7 @@ print('FPGA Configured')
 pic_ser.write(bytes(SetLength, 'utf-8'))
 to_Send = num_samples.to_bytes(4,'big',signed=False)
 pic_ser.write(num_samples.to_bytes(4,'big',signed=False))
-pic_ser.write(bytes(lf, 'utf-8'))
+pic_ser.write(lf)
 
 #Wait for acknowledge
 val=wait4byte(pic_ser,ack,is_ascii=False)
@@ -78,12 +78,15 @@ print('Data Length Set')
 #buffer data
 var = 0
 for i in test:
-    pic_ser.write(bytes(Data, 'utf_8'))
     val = i.to_bytes(2,byteorder='big',signed=True)
-    pic_ser.write(val) #buffer ADC1
-    pic_ser.write(bytes(delim, 'utf-8'))
-    pic_ser.write(val) #buffer ADC2
-    pic_ser.write(bytes(lf, 'utf-8'))
+    to_write = Data + val + delim + val + lf
+    pic_ser.write(to_write)
+    #pic_ser.write(bytes(Data, 'utf_8'))
+    #val = i.to_bytes(2,byteorder='big',signed=True)
+    #pic_ser.write(val) #buffer ADC1
+    #pic_ser.write(bytes(delim, 'utf-8'))
+    #pic_ser.write(val) #buffer ADC2
+    #pic_ser.write(bytes(lf, 'utf-8'))
     if var%1000 == 0:
         print('buffering ', var)
     var = var+1
