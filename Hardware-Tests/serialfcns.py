@@ -4,26 +4,19 @@ import serial #import serial library
 import time
 import numpy as np
 
-def wait4byte(ser,ack,is_ascii=True,timeout=10):
+def wait4byte(ser,ack,is_ascii=True):
     
     ack_read = False
     val = ''
-    #start = time.perf_counter()
     while ack_read == False:
-        v = ser.read()
-        if is_ascii:
-            val = v.decode('ascii')
-        else:
-            val=v
-        if val == ack:
-            ack_read = True
-        else:
-            #curr_time = time.perf_counter
-            #print(curr_time)
-            #t_diff = curr_time-start
-            t_diff = 5
-            if t_diff>timeout:
-                raise Exception("Timeout Error")
+        if (ser.in_waiting > 0):
+            v = ser.read()
+            if is_ascii:
+                val = v.decode('ascii')
+            else:
+                val=v
+            if val == ack:
+                ack_read = True
     return val
 
 def readFPGA(ser):

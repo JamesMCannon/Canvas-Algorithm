@@ -24,7 +24,7 @@ nFFT = 1024                 # length of FFT
 n_acc = 8                   # number of FFTs to accummulate
 
 #misc PIC commands
-ack = '\x06'
+ack = b'\x06'
 lf = '\x0A'
 delim = '\x2C'
 complete = '\nReady.'
@@ -62,7 +62,7 @@ pic_ser.write(bytes(FFT_result , 'utf-8'))
 pic_ser.write(bytes(lf, 'utf-8'))
 
 #Wait for acknowledge
-val=wait4byte(pic_ser,ack)
+val=wait4byte(pic_ser,ack,is_ascii=False)
 print('FPGA Configured')
 
 #Set number of samples to be buffered
@@ -72,7 +72,7 @@ pic_ser.write(num_samples.to_bytes(4,'big',signed=False))
 pic_ser.write(bytes(lf, 'utf-8'))
 
 #Wait for acknowledge
-val=wait4byte(pic_ser,ack)
+val=wait4byte(pic_ser,ack,is_ascii=False)
 print('Data Length Set')
 
 #buffer data
@@ -87,7 +87,7 @@ for i in test:
     if var%1000 == 0:
         print('buffering ', var)
     var = var+1
-    val=wait4byte(pic_ser,ack)
+    val=wait4byte(pic_ser,ack,is_ascii=False)
 
 #check for complete from PIC
 '''
