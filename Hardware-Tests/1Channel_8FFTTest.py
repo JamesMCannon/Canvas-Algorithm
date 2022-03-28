@@ -16,9 +16,8 @@ MIN_VALUE_OF_16_BIT_INT = -1 * (2 ** (16 - 1)) # most negative for two's complem
 
 # some set up parameters
 fs = 131072.                # sampling freq. in Hz
-signal_freq0 = 35e3         # signal freq. 1 in Hz
-amp0 = 2**15                # amplitudes (in ADC units)
-amp1 = 2**15                # amplitudes (in ADC units)
+signal_freq0 = fs/4         # signal freq. 1 in Hz
+amp0 = 2**15 -1               # amplitudes (in ADC units)
 shift0 = 0                  # phase shift in radians
 sample_len = 0.5             # seconds
 nFFT = 1024                 # length of FFT

@@ -54,7 +54,7 @@ def readFPGA(ser):
     test_mode = ser.read(1)
     payload_len = ser.read(2)
     length = int.from_bytes(payload_len,'big') +1 #'big' => most significant byte is at the beginning of the byte array
-
+    length = 16000*12
     mask = b'\x0f' 
     test_mode = bytes([test_mode[0] & mask[0]])
 
