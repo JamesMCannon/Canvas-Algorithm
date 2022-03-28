@@ -69,7 +69,9 @@ def resample(data, sample_len, fs_vlf, fs):
 def test_signal(fs, sample_len, freq, amp, shift=0, channel_num=0, show_plots=False, save_output='both', out_folder='output'):
 
     # create time domain data
-    t_vec = np.linspace(0, sample_len, num=int(fs*sample_len))   # create time vec
+    samples = int(fs*sample_len)
+    del_t = 1/fs
+    t_vec = np.linspace(0, sample_len-del_t, num=samples)   # create time vec
     
     channels_td_raw = amp * np.sin(freq * 2 * np.pi * t_vec + shift)
 

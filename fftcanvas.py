@@ -31,7 +31,7 @@ def canvas_fft(nFFT, fs, win, channel_td, overlap=True, channel_num=0, show_plot
             print('padded last FFT w zeros')
 
         # mutitply elementwise by windowing func
-        cs_2 = np.array(cs_2)
+        cs_2 = np.array(cs_2,dtype=np.int32)
         cs_win = np.multiply(win, cs_2) # should be integer (with max 2^31-1) -- SIGNED 32 BIT
 
         # ---------------------------check win * input---------------------------------
