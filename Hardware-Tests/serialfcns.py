@@ -10,7 +10,7 @@ def wait4byte(ser,ack,is_ascii=True):
     val = ''
     while ack_read == False:
         if (ser.in_waiting > 0):
-            v = ser.read()
+            v = ser.read(ser.in_waiting)
             if is_ascii:
                 val = v.decode('ascii')
             else:

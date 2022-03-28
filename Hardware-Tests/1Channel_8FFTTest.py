@@ -24,7 +24,7 @@ nFFT = 1024                 # length of FFT
 n_acc = 8                   # number of FFTs to accummulate
 
 #misc PIC commands
-ack = b'\x06'
+ack = b'\x06\x0A'
 lf = '\x0A'
 delim = '\x2C'
 complete = '\nReady.'
