@@ -28,8 +28,6 @@ def readFPGA(ser, readAll = False):
     acc_power = b'\x06'   
     spec_result = b'\x07'
 
-   
-
     #define sycn bytes
     s1 = b'\x35'
     s2= b'\x2E'
@@ -37,7 +35,6 @@ def readFPGA(ser, readAll = False):
     s4 = b'\x53'
 
     #Synchronize with expected packet
-
     r1=wait4byte(ser,s1,False)
     r2=wait4byte(ser,s2,False)
     r3=wait4byte(ser,s3,False)
@@ -48,33 +45,38 @@ def readFPGA(ser, readAll = False):
     test_mode = ser.read(1)
     payload_len = ser.read(2)
     length = int.from_bytes(payload_len,'big') +1 #'big' => most significant byte is at the beginning of the byte array
-    length = 16000*12
     mask = b'\x0f' 
     test_mode = bytes([test_mode[0] & mask[0]])
 
     if test_mode==tx_packet_gen:
         print("tx_packet_gen")
         word_length = 4 #bytes
+        bits  = 'u-16'
         bins = False #do the first 2 bytes of payload word denote sample/bin #?
     elif test_mode == rotation:
         print("rotation")
         word_length = 12 #bytes
+        bits = 's-16'
         bins = True #do the first 2 bytes of payload word denote sample/bin #?
     elif test_mode == fft_result:
         print("FFT Result")
         word_length = 12 #bytes
+        bits = 's-32'
         bins = True #do the first 2 bytes of payload word denote sample/bin #?
     elif test_mode == power_calc:
         print("Power Calculation")
         word_length = 12 #bytes
+        bits = 'u-64'
         bins = True #do the first 2 bytes of payload word denote sample/bin #?
     elif test_mode == acc_power:
         print("Accumulated Power")
         word_length = 12 #bytes
+        bits = 'u-64'
         bins = True #do the first 2 bytes of payload word denote sample/bin #?
     elif test_mode == spec_result:
         print("Spectral Result")
         word_length = 12 #bytes
+        bits = 'u-64'
         bins = True #do the first 2 bytes of payload word denote sample/bin #?
     else:
         raise Exception("Unexpected Test Mode")
@@ -85,6 +87,7 @@ def readFPGA(ser, readAll = False):
     if readAll:
         words=1600
         vals = readAll(words,ser)
+        bits = 'u-16'
     elif test_mode==tx_packet_gen:
         raise Exception("Packet Gen not yet supported")
     elif test_mode == rotation:
@@ -100,7 +103,7 @@ def readFPGA(ser, readAll = False):
     else:
         raise Exception("Unexpected Test Mode")
 
-    return vals
+    return vals,bits
 
 def readRotate(words,ser):
     vals = np.zeros((words,5))
@@ -161,24 +164,45 @@ def readSpec(words,ser):
     return vals
 
 def readAll(words,ser): #basic read function, reads in two-byte intervals
-    #todo: change format to output raw hex
+    s1 = b'\x35'
+    s2= b'\x2E'
+    s3 = b'\xF8'
+    s4 = b'\x53'
     vals = np.zeros((words,6))
-    vals = bytearray()
+    #vals = bytearray()
     for i in range(words):
             v0 = ser.read(2)
+            vals[i][0] = int.from_bytes(v0,'big')
+            if v0 == (s1+s2):
+                v1 = ser.read(2)
+                vals[i][1] = int.from_bytes(v1,'big')
+                if v1 == (s3+s4):
+                    low = 2
+                    up = 4
+                else:
+                    low = 2
+                    up = 6
+            else:
+                low = 1
+                high = 6
+            for j in range(low,high):
+                v = ser.read(2)
+                vals[i][j] = int.from_bytes(v,'big')
+                
+            '''
             v1 = ser.read(2)
             v2 = ser.read(2)
             v3 = ser.read(2)
             v4 = ser.read(2)
             v5 = ser.read(2)
-
+            
             vals[i][0] = v0
             vals[i][1] = v1
             vals[i][2] = v2
             vals[i][3] = v3
             vals[i][4] = v4
             vals[i][5] = v5
-            '''
+            
             vals[i][0] = int.from_bytes(v0,'big')
             vals[i][1] = int.from_bytes(v1,'big')
             vals[i][2] = int.from_bytes(v2,'big')

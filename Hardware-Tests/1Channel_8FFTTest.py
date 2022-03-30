@@ -2,6 +2,8 @@ from encodings import utf_8
 from multiprocessing.connection import wait
 import os
 import sys
+
+from saveas import save_output_txt
 sys.path.append("..\Canvas-Algorithm") #import functions from parent directory
 import serial #import serial library
 import time
@@ -113,10 +115,12 @@ pic_ser.write(bytes(lf, 'utf-8'))
 val=wait4byte(pic_ser,ack)
 print('FPGA Started')
 
-vals = readFPGA(FPGA_ser,readAll=True)
+vals,bits = readFPGA(FPGA_ser,readAll=True)
 
 #save data
-np.savetxt('TestFile.csv', vals, delimiter=',')
+out_folder = 'HW-output'
+out_path = out_folder+'/channel'+'_cmprs'
+save_output_txt(vals,out_path,'Both',bits)
 v=int(vals[0][1])
 print('First Entry: ',v) #Let's look at the first datum
 
