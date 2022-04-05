@@ -5,17 +5,17 @@ import time
 import numpy as np
 
 def wait4byte(ser,ack,is_ascii=True):
-    
+    ready = b'Ready.\n'
     ack_read = False
     val = ''
     while ack_read == False:
         if (ser.in_waiting > 0):
-            v = ser.read()
+            v = ser.read(ser.in_waiting)
             if is_ascii:
                 val = v.decode('ascii')
             else:
                 val=v
-            if val == ack:
+            if val == ack or val == ready:
                 ack_read = True
     return val
 

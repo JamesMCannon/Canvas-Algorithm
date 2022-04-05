@@ -25,7 +25,7 @@ nFFT = 1024                 # length of FFT
 n_acc = 8                   # number of FFTs to accummulate
 
 #misc PIC commands
-ack = b'\x06'
+ack = b'\x06\x0A'
 lf = b'\x0A'
 delim = b'\x2C'
 complete = '\nReady.'
@@ -51,7 +51,7 @@ Spectra_result = '\x07'
 channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output=None)
 num_samples = len(channels0_td)
 print(num_samples)
-num_samples = 11
+#num_samples = 20001
 test = channels0_td[0:num_samples]
 
 pic_ser = serial.Serial("COM4",460800)
@@ -75,7 +75,7 @@ pic_ser.write(lf)
 #Wait for acknowledge
 val=wait4byte(pic_ser,ack,is_ascii=False)
 print('Data Length Set')
-
+t0=time.perf_counter()
 #buffer data
 var = 0
 for i in test:
@@ -91,9 +91,23 @@ for i in test:
     if var%1000 == 0:
         print('buffering ', var)
     var = var+1
-    val=wait4byte(pic_ser,ack,is_ascii=False)
+    #val=wait4byte(pic_ser,ack,is_ascii=False)
 
 #check for complete from PIC
+ready = b'Ready.\n'
+ack_read = False
+val = ''
+while ack_read == False:
+    if (pic_ser.in_waiting > 0):
+        if pic_ser.in_waiting>7:
+            dump = pic_ser.read(pic_ser.in_waiting-7)
+        else:
+            v = pic_ser.read(pic_ser.in_waiting)
+            val=v
+        if val == ready:
+            ack_read = True
+
+#val=wait4byte(pic_ser,ack,is_ascii=False)
 '''
 send_complete = False
 
@@ -105,7 +119,7 @@ while send_complete == False:
         print(val)
 '''
 print('Data buffered')
-
+t1 = time.perf_counter()
 #start
 pic_ser.write(bytes(StartFPGA , 'utf-8'))
 pic_ser.write(lf)
