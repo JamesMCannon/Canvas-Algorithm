@@ -51,7 +51,7 @@ Spectra_result = '\x07'
 channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output=None)
 num_samples = len(channels0_td)
 print(num_samples)
-#num_samples = 20001
+num_samples = 20
 test = channels0_td[0:num_samples]
 
 pic_ser = serial.Serial("COM4",460800)
@@ -88,13 +88,16 @@ for i in test:
     #pic_ser.write(bytes(delim, 'utf-8'))
     #pic_ser.write(val) #buffer ADC2
     #pic_ser.write(bytes(lf, 'utf-8'))
-    if var%1000 == 0:
+    if var%500 == 0:
         print('buffering ', var)
+        while(pic_ser.in_waiting>7):
+            dump = pic_ser.read(pic_ser.in_waiting-7)
     var = var+1
     #val=wait4byte(pic_ser,ack,is_ascii=False)
 
 #check for complete from PIC
-ready = b'Ready.\n'
+#ready = b'Ready.\n'
+ready = b'\n\x06\n\x06\n\x06\n' #PIC not sending "Ready"
 ack_read = False
 val = ''
 while ack_read == False:
@@ -125,7 +128,7 @@ pic_ser.write(bytes(StartFPGA , 'utf-8'))
 pic_ser.write(lf)
 
 #Wait for acknowledge
-val=wait4byte(pic_ser,ack)
+val=wait4byte(pic_ser,ack) #PIC not sending ACK
 print('FPGA Started')
 
 vals,bits = readFPGA(FPGA_ser,readAll=True)
