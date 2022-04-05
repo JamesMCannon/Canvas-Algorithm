@@ -7,6 +7,7 @@ import serial #import serial library
 import time
 import numpy as np
 from numpy import random
+from saveas import save_output_txt
 from serialfcns import wait4byte, readFPGA
 from inputstimulus import test_signal
 
@@ -50,15 +51,15 @@ Spectra_result = '\x07'
 channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output=None)
 num_samples = len(channels0_td)
 print(num_samples)
-#num_samples = 11
+num_samples = 11
 test = channels0_td[0:num_samples]
 
-pic_ser = serial.Serial("COM5",460800)
-FPGA_ser = serial.Serial("COM4",115200)
+pic_ser = serial.Serial("COM4",460800)
+FPGA_ser = serial.Serial("COM5",115200)
 
 #configure PIC
 pic_ser.write(bytes(SetConfig , 'utf-8'))
-pic_ser.write(bytes(FFT_result , 'utf-8'))
+pic_ser.write(bytes(Rotation , 'utf-8'))
 pic_ser.write(lf)
 
 #Wait for acknowledge
@@ -107,7 +108,7 @@ print('Data buffered')
 
 #start
 pic_ser.write(bytes(StartFPGA , 'utf-8'))
-pic_ser.write(bytes(lf, 'utf-8'))
+pic_ser.write(lf)
 
 #Wait for acknowledge
 val=wait4byte(pic_ser,ack)
