@@ -178,10 +178,10 @@ def readAll(words,ser): #basic read function, reads in two-byte intervals
                 vals[i][1] = int.from_bytes(v1,'big')
                 if v1 == (s3+s4):
                     low = 2
-                    up = 4
+                    high = 4
                 else:
                     low = 2
-                    up = 6
+                    high = 6
             else:
                 low = 1
                 high = 6
