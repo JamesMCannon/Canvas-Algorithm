@@ -4,13 +4,13 @@ import serial #import serial library
 import time
 import numpy as np
 
-def wait4byte(ser,ack,is_ascii=True):
+def wait4byte(ser,ack,is_ascii=True,byte_size=2):
     ready = b'Ready.\n'
     ack_read = False
     val = ''
     while ack_read == False:
         if (ser.in_waiting > 0):
-            v = ser.read(ser.in_waiting)
+            v = ser.read(byte_size)
             if is_ascii:
                 val = v.decode('ascii')
             else:
@@ -35,10 +35,10 @@ def readFPGA(ser, readAll = False):
     s4 = b'\x53'
 
     #Synchronize with expected packet
-    r1=wait4byte(ser,s1,False)
-    r2=wait4byte(ser,s2,False)
-    r3=wait4byte(ser,s3,False)
-    r4=wait4byte(ser,s4,False)
+    r1=wait4byte(ser,s1,False,1)
+    r2=wait4byte(ser,s2,False,1)
+    r3=wait4byte(ser,s3,False,1)
+    r4=wait4byte(ser,s4,False,1)
 
     #extract header info
     alg_id = ser.read(1)
@@ -81,7 +81,7 @@ def readFPGA(ser, readAll = False):
     else:
         raise Exception("Unexpected Test Mode")
 
-    words = length/word_length
+    words = int(length/word_length)
 
     #read in payload 
     if readAll:

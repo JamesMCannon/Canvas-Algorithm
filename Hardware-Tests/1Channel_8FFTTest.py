@@ -51,7 +51,7 @@ Spectra_result = '\x07'
 channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output=None)
 num_samples = len(channels0_td)
 print(num_samples)
-num_samples = 5
+#num_samples = 1001
 test = channels0_td[0:num_samples]
 
 pic_ser = serial.Serial("COM4",460800)
@@ -59,7 +59,7 @@ FPGA_ser = serial.Serial("COM5",115200)
 
 #configure PIC
 pic_ser.write(bytes(SetConfig , 'utf-8'))
-pic_ser.write(bytes(Rotation , 'utf-8'))
+pic_ser.write(bytes(FFT_result , 'utf-8'))
 pic_ser.write(lf)
 
 #Wait for acknowledge
@@ -88,19 +88,19 @@ for i in test:
     #pic_ser.write(bytes(delim, 'utf-8'))
     #pic_ser.write(val) #buffer ADC2
     #pic_ser.write(bytes(lf, 'utf-8'))
-    if var%500 == 0:
+    if var%1000 == 0:
         print('buffering ', var)
         #while(pic_ser.in_waiting>7):
             #dump = pic_ser.read(pic_ser.in_waiting-7)
     var = var+1
-    val=wait4byte(pic_ser,ack,is_ascii=False)
+    #val=wait4byte(pic_ser,ack,is_ascii=False)
 
 #check for complete from PIC
 ready = b'Ready.\n'
 #ready = b'\n\x06\n\x06\n\x06\n' #PIC not sending "Ready"
 ack_read = False
 val = ''
-ack_read = True
+#ack_read = True
 while ack_read == False:
     if (pic_ser.in_waiting > 0):
         if pic_ser.in_waiting>7:
@@ -129,15 +129,22 @@ pic_ser.write(bytes(StartFPGA , 'utf-8'))
 pic_ser.write(lf)
 
 #Wait for acknowledge
-val=wait4byte(pic_ser,ack) #PIC not sending ACK
+val=wait4byte(pic_ser,ack,is_ascii=False) #PIC not sending ACK
 print('FPGA Started')
 
-vals,bits = readFPGA(FPGA_ser,readAll=True)
+vals,bits = readFPGA(FPGA_ser,readAll=False)
+
+bin= vals[:,0]
+im = vals[:,1]
+re = vals[:,2]
+
 
 #save data
 out_folder = 'HW-output'
-out_path = out_folder+'/channel'+'_cmprs'
-save_output_txt(vals,out_path,'Both',bits)
+out_path = out_folder+'/FFT_Result'+str(signal_freq0)
+save_output_txt(bin,out_path+'bin','both',bits)
+save_output_txt(im,out_path+'img','both',bits)
+save_output_txt(re,out_path+'real','both',bits)
 v=int(vals[0][1])
 print('First Entry: ',v) #Let's look at the first datum
 

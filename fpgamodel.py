@@ -22,13 +22,13 @@ for f in files:
 
 # some set up parameters
 fs = 131072.                # sampling freq. in Hz
-signal_freq0 = fs/4         # signal freq. 1 in Hz
+signal_freq0 = fs/8         # signal freq. 1 in Hz
 signal_freq1 = 30e3         # signal freq. 2 in Hz
 amp0 = 2**15                # amplitudes (in ADC units)
 amp1 = 2**15                # amplitudes (in ADC units)
 shift0 = 0                  # phase shift in radians
 shift1 = 0                  # phase shift in radians
-sample_len = 1              # seconds
+sample_len = 0.5              # seconds
 nFFT = 1024                 # length of FFT
 n_acc = 8                   # number of FFTs to accummulate
 
