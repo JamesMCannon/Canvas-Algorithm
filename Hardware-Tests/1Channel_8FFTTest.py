@@ -48,25 +48,22 @@ Power_calc = '\x05'
 Acc_power = '\x06'
 Spectra_result = '\x07'
 
-#channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output='both')
-#num_samples = len(channels0_td)
-#print(num_samples)
-num_samples = 1001
-#test = channels0_td[0:num_samples]
+channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output='both')
+num_samples = len(channels0_td)
+print(num_samples)
+#num_samples = 11
+test = channels0_td[0:num_samples]
 
-test = [i for i in range(num_samples)]
+#test = [i for i in range(num_samples)]
 
-'''test1 = np.zeros(num_samples,dtype=np.int16)
-for i in range (num_samples):
-    test1[i] = i
-test = int(test1)'''
+
 pic_ser = serial.Serial("COM4",115200)
 FPGA_ser = serial.Serial("COM5",115200)
 
 #configure PIC
 pic_ser.write(b'\x03')
 pic_ser.write(bytes(SetConfig , 'utf-8'))
-pic_ser.write(bytes(Rotation , 'utf-8'))
+pic_ser.write(bytes(FFT_result , 'utf-8'))
 pic_ser.write(lf)
 
 #Wait for acknowledge
@@ -131,8 +128,10 @@ while send_complete == False:
         send_complete = True
         print(val)
 '''
-print('Data buffered')
 t1 = time.perf_counter()
+del_t = t1-t0
+print('Data buffered after %f seconds', del_t)
+
 #start
 pic_ser.write(b'\x02')
 pic_ser.write(bytes(StartFPGA , 'utf-8'))
@@ -144,30 +143,30 @@ print('FPGA Started')
 
 vals,bits = readFPGA(FPGA_ser,readAll=False)
 
-'''bin= vals[:,0]
+bin= vals[:,0]
 im = vals[:,1]
-re = vals[:,2]'''
+re = vals[:,2]
 
-sample = vals[:,0]
+'''sample = vals[:,0]
 adc2r = vals[:,1]
 adc1r = vals[:,2]
 adc2 = vals[:,3]
-adc1 = vals[:,4]
+adc1 = vals[:,4]'''
 
 
 #save data
 out_folder = 'HW-output'
 out_path = out_folder+'/FFT_Result'+str(signal_freq0)
-'''save_output_txt(bin,out_path+'bin','both',bits)
+save_output_txt(bin,out_path+'bin','both',bits)
 save_output_txt(im,out_path+'img','both',bits)
-save_output_txt(re,out_path+'real','both',bits)'''
+save_output_txt(re,out_path+'real','both',bits)
 
-save_output_txt(sample,out_path+'sample','both',bits)
+'''save_output_txt(sample,out_path+'sample','both',bits)
 save_output_txt(adc2r,out_path+'adc2r','both',bits)
 save_output_txt(adc1r,out_path+'adc1r','both',bits)
 save_output_txt(adc2,out_path+'adc2','both',bits)
-save_output_txt(adc1,out_path+'adc1','both',bits)
-v=int(vals[0][1])
+save_output_txt(adc1,out_path+'adc1','both',bits)'''
+v=int(vals[0][0])
 print('First Entry: ',v) #Let's look at the first datum
 
 
