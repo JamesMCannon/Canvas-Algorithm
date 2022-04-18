@@ -11,6 +11,9 @@ from saveas import save_output_txt
 from serialfcns import wait4byte, readFPGA
 from inputstimulus import test_signal
 
+from readFPGA import read_FPGA_input, read_INT_input, quick_compare, flatten, twos_complement
+from readFPGA import read_FPGA_fft_debug, read_FPGA_input_lines
+
 
 MAX_VALUE_OF_16_BIT_INT = 2 ** (16 - 1) - 1 # max for two's complement integer
 MIN_VALUE_OF_16_BIT_INT = -1 * (2 ** (16 - 1)) # most negative for two's complement integer 
@@ -48,7 +51,15 @@ Power_calc = '\x05'
 Acc_power = '\x06'
 Spectra_result = '\x07'
 
-channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output='both')
+#Generate input signal from file or aribitrarily
+fromFile = True
+
+if fromFile:
+    inputs = 'Inputs/'
+    file = inputs+'hi_amp_512hz.txt'  
+    channels0_td = read_FPGA_input(file,signed=True,show_plots=False)
+else:
+    channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output='both')
 num_samples = len(channels0_td)
 print(num_samples)
 #num_samples = 11
