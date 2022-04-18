@@ -12,7 +12,7 @@ def twos_complement(hexstr,b):
 # ------------------------------------------------------------------------------------
 
 # ---------------------------- read FPGA input ---------------------------------------
-def read_FPGA_input(file, b, signed=True, show_plots=False):
+def read_FPGA_input(file, b=16, signed=True, show_plots=False):
     f = open(file, 'r')
     datalines = [line for line in f]
     if signed:

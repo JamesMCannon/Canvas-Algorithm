@@ -10,3 +10,4 @@ canalg_env/*
 Hardware-Tests/__pycache__/*
 Hardware-Tests/Results/*
 !CANVAS_fbins/*
+!Inputs/*
