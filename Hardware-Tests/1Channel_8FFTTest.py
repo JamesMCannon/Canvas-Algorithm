@@ -63,7 +63,7 @@ FPGA_ser = serial.Serial("COM5",115200)
 #configure PIC
 pic_ser.write(b'\x03')
 pic_ser.write(bytes(SetConfig , 'utf-8'))
-pic_ser.write(bytes(FFT_result , 'utf-8'))
+pic_ser.write(bytes(Rotation, 'utf-8'))
 pic_ser.write(lf)
 
 #Wait for acknowledge
@@ -88,25 +88,15 @@ for i in test:
     data_len = b'\x07'
     to_write = data_len + Data + val + delim + val + lf
     pic_ser.write(to_write)
-    #pic_ser.write(bytes(Data, 'utf_8'))
-    #val = i.to_bytes(2,byteorder='big',signed=True)
-    #pic_ser.write(val) #buffer ADC1
-    #pic_ser.write(bytes(delim, 'utf-8'))
-    #pic_ser.write(val) #buffer ADC2
-    #pic_ser.write(bytes(lf, 'utf-8'))
     if var%1000 == 0:
         print('buffering ', var)
-        #while(pic_ser.in_waiting>7):
-            #dump = pic_ser.read(pic_ser.in_waiting-7)
     var = var+1
     #val=wait4byte(pic_ser,ack,is_ascii=False)
 
 #check for complete from PIC
 ready = b'Ready.\n'
-#ready = b'\n\x06\n\x06\n\x06\n' #PIC not sending "Ready"
 ack_read = False
 val = ''
-#ack_read = True
 while ack_read == False:
     if (pic_ser.in_waiting > 0):
         if pic_ser.in_waiting>7:
@@ -117,17 +107,7 @@ while ack_read == False:
         if val == ready:
             ack_read = True
 
-#val=wait4byte(pic_ser,ack,is_ascii=False)
-'''
-send_complete = False
 
-while send_complete == False:
-    v = pic_ser.read()
-    val += v.decode('ascii')
-    if val == complete:
-        send_complete = True
-        print(val)
-'''
 t1 = time.perf_counter()
 del_t = t1-t0
 print('Data buffered after %f seconds', del_t)
@@ -142,30 +122,56 @@ val=wait4byte(pic_ser,ack,is_ascii=False) #PIC not sending ACK
 print('FPGA Started')
 
 vals,bits = readFPGA(FPGA_ser,readAll=False)
+#vals1,bits1 = readFPGA(FPGA_ser,readAll = False)
 
-bin= vals[:,0]
+'''bin= vals[:,0]
 im = vals[:,1]
-re = vals[:,2]
+re = vals[:,2]'''
 
-'''sample = vals[:,0]
+sample = vals[:,0]
 adc2r = vals[:,1]
 adc1r = vals[:,2]
 adc2 = vals[:,3]
-adc1 = vals[:,4]'''
+adc1 = vals[:,4]
 
 
 #save data
 out_folder = 'HW-output'
-out_path = out_folder+'/FFT_Result'+str(signal_freq0)
-save_output_txt(bin,out_path+'bin','both',bits)
+out_path = out_folder+'/ADC_Result'+str(signal_freq0)
+'''save_output_txt(bin,out_path+'bin','both',bits)
 save_output_txt(im,out_path+'img','both',bits)
-save_output_txt(re,out_path+'real','both',bits)
+save_output_txt(re,out_path+'real','both',bits)'''
+
+save_output_txt(sample,out_path+'sample','both',bits)
+save_output_txt(adc2r,out_path+'adc2r','both',bits)
+save_output_txt(adc1r,out_path+'adc1r','both',bits)
+save_output_txt(adc2,out_path+'adc2','both',bits)
+save_output_txt(adc1,out_path+'adc1','both',bits)
+
+'''bin= vals1[:,0]
+im = vals1[:,1]
+re = vals1[:,2]'''
+
+'''sample = vals1[:,0]
+adc2r = vals1[:,1]
+adc1r = vals1[:,2]
+adc2 = vals1[:,3]
+adc1 = vals1[:,4]'''
+
+
+#save data
+out_folder = 'HW-output'
+out_path = out_folder+'/ADC_Result'+str(signal_freq0)
+'''save_output_txt(bin,out_path+'bin','both',bits1)
+save_output_txt(im,out_path+'img','both',bits1)
+save_output_txt(re,out_path+'real','both',bits1)'''
 
 '''save_output_txt(sample,out_path+'sample','both',bits)
 save_output_txt(adc2r,out_path+'adc2r','both',bits)
 save_output_txt(adc1r,out_path+'adc1r','both',bits)
 save_output_txt(adc2,out_path+'adc2','both',bits)
 save_output_txt(adc1,out_path+'adc1','both',bits)'''
+
 v=int(vals[0][0])
 print('First Entry: ',v) #Let's look at the first datum
 
