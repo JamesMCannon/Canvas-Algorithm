@@ -147,3 +147,17 @@ def read_FPGA_input_lines(file, b, line_n, x, y, signed=True, show_plots=False):
     return d1, d2
 
 # ------------------------------------------------------------------------------------ 
+
+def read_FPGA_fft(file,b=32,header=True,signed=True):
+    f = open(file,'r')
+    re = []
+    im = []
+    datalines = [line.split() for line in f]
+    if header:
+        datalines = datalines[1:]
+    for i in datalines:
+        re.append(i[1])
+        im.append(i[2])
+    real = [twos_complement(p,b) for p in re]
+    imaginary = [twos_complement(p,b) for p in im]
+    return real,imaginary

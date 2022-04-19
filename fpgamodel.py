@@ -34,10 +34,10 @@ n_acc = 8                   # number of FFTs to accummulate
 
 # STEP 1 -------------------- GENERATE INPUT ----------------------------- 
 # get one or two test singals
-channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=True, save_output='both')
-'''inputs = 'Inputs/'
-file = inputs+'hi_amp_512hz.txt'  
-channels0_td = read_FPGA_input(file,signed=True,show_plots=True)'''
+#channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=True, save_output='both')
+inputs = 'Inputs/'
+file = inputs+'hi_amp_60khz.txt'  
+channels0_td = read_FPGA_input(file,signed=True,show_plots=True)
 #channels1_td = test_signal(fs, sample_len, signal_freq1, amp1, shift=shift1, channel_num=1, show_plots=False, save_output='both')
 
 # STEP 2 ----------------- GET HANNING WINDOW ----------------------------
