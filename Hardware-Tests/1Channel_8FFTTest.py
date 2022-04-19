@@ -20,7 +20,7 @@ MIN_VALUE_OF_16_BIT_INT = -1 * (2 ** (16 - 1)) # most negative for two's complem
 
 # some set up parameters
 fs = 131072.                # sampling freq. in Hz
-signal_freq0 = fs/10         # signal freq. 1 in Hz
+signal_freq0 = 60000         # signal freq. 1 in Hz
 amp0 = 2**15-1                # amplitudes (in ADC units)
 shift0 = 0                  # phase shift in radians
 sample_len = 0.5             # seconds
@@ -50,13 +50,15 @@ FFT_result = '\x04'
 Power_calc = '\x05'
 Acc_power = '\x06'
 Spectra_result = '\x07'
+pwr_ram_a = '\x06'
+pwr_ram_b = '\x07'
 
 #Generate input signal from file or aribitrarily
 fromFile = True
 
 if fromFile:
     inputs = 'Inputs/'
-    file = inputs+'hi_amp_512hz.txt'  
+    file = inputs+'hi_amp_60khz.txt'  
     channels0_td = read_FPGA_input(file,signed=True,show_plots=False)
 else:
     channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output='both')
@@ -74,7 +76,7 @@ FPGA_ser = serial.Serial("COM5",115200)
 #configure PIC
 pic_ser.write(b'\x03')
 pic_ser.write(bytes(SetConfig , 'utf-8'))
-pic_ser.write(bytes(Rotation, 'utf-8'))
+pic_ser.write(bytes(FFT_result, 'utf-8')) #Change this 
 pic_ser.write(lf)
 
 #Wait for acknowledge
@@ -132,56 +134,48 @@ pic_ser.write(lf)
 val=wait4byte(pic_ser,ack,is_ascii=False) #PIC not sending ACK
 print('FPGA Started')
 
-vals,bits = readFPGA(FPGA_ser,readAll=False)
-#vals1,bits1 = readFPGA(FPGA_ser,readAll = False)
+vals,bits = readFPGA(FPGA_ser,readAllcon=False)
+#vals1,bits1 = readFPGA(FPGA_ser,readAllcon = True)
 
-'''bin= vals[:,0]
+bin= vals[:,0]
 im = vals[:,1]
-re = vals[:,2]'''
+re = vals[:,2]
 
-sample = vals[:,0]
+'''sample = vals[:,0]
 adc2r = vals[:,1]
 adc1r = vals[:,2]
 adc2 = vals[:,3]
-adc1 = vals[:,4]
+adc1 = vals[:,4]'''
+
+'''all1 = vals[:,0]
+all2 = vals[:,1]
+all3 = vals[:,2]
+all4 = vals[:,3]
+all5 = vals[:,4]
+all6 = vals[:,5]'''
 
 
 #save data
 out_folder = 'HW-output'
-out_path = out_folder+'/ADC_Result'+str(signal_freq0)
-'''save_output_txt(bin,out_path+'bin','both',bits)
+out_path = out_folder+'/FPGA-Rev11p1_FFT'+str(signal_freq0)
+save_output_txt(bin,out_path+'bin','both',bits)
 save_output_txt(im,out_path+'img','both',bits)
-save_output_txt(re,out_path+'real','both',bits)'''
-
-save_output_txt(sample,out_path+'sample','both',bits)
-save_output_txt(adc2r,out_path+'adc2r','both',bits)
-save_output_txt(adc1r,out_path+'adc1r','both',bits)
-save_output_txt(adc2,out_path+'adc2','both',bits)
-save_output_txt(adc1,out_path+'adc1','both',bits)
-
-'''bin= vals1[:,0]
-im = vals1[:,1]
-re = vals1[:,2]'''
-
-'''sample = vals1[:,0]
-adc2r = vals1[:,1]
-adc1r = vals1[:,2]
-adc2 = vals1[:,3]
-adc1 = vals1[:,4]'''
-
-
-#save data
-out_folder = 'HW-output'
-out_path = out_folder+'/ADC_Result'+str(signal_freq0)
-'''save_output_txt(bin,out_path+'bin','both',bits1)
-save_output_txt(im,out_path+'img','both',bits1)
-save_output_txt(re,out_path+'real','both',bits1)'''
+save_output_txt(re,out_path+'real','both',bits)
 
 '''save_output_txt(sample,out_path+'sample','both',bits)
 save_output_txt(adc2r,out_path+'adc2r','both',bits)
 save_output_txt(adc1r,out_path+'adc1r','both',bits)
 save_output_txt(adc2,out_path+'adc2','both',bits)
 save_output_txt(adc1,out_path+'adc1','both',bits)'''
+
+
+'''save_output_txt(all1,out_path+'1','both',bits)
+save_output_txt(all2,out_path+'2','both',bits)
+save_output_txt(all3,out_path+'3','both',bits)
+save_output_txt(all4,out_path+'4','both',bits)
+save_output_txt(all5,out_path+'5','both',bits)
+save_output_txt(all6,out_path+'6','both',bits)
+'''
 
 v=int(vals[0][0])
 print('First Entry: ',v) #Let's look at the first datum

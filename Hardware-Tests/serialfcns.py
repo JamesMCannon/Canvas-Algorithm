@@ -19,7 +19,7 @@ def wait4byte(ser,ack,is_ascii=True,byte_size=2):
                 ack_read = True
     return val
 
-def readFPGA(ser, readAll = False):
+def readFPGA(ser, readAllcon = False):
     #define data modes
     tx_packet_gen = b'\x02'
     rotation = b'\x03'
@@ -78,14 +78,17 @@ def readFPGA(ser, readAll = False):
         word_length = 12 #bytes
         bits = 'u-64'
         bins = True #do the first 2 bytes of payload word denote sample/bin #?
+    elif readAllcon:
+        print("new test mode, read all")
+        word_length =12 #dummy, gets over written in 91
     else:
         raise Exception("Unexpected Test Mode")
 
     words = int(length/word_length)
 
     #read in payload 
-    if readAll:
-        words=1600
+    if readAllcon:
+        words=16500
         vals = readAll(words,ser)
         bits = 'u-16'
     elif test_mode==tx_packet_gen:
@@ -171,6 +174,8 @@ def readAll(words,ser): #basic read function, reads in two-byte intervals
     vals = np.zeros((words,6))
     #vals = bytearray()
     for i in range(words):
+            if i%1000==0:
+                print("reading vals ", i)
             v0 = ser.read(2)
             vals[i][0] = int.from_bytes(v0,'big')
             if v0 == (s1+s2):
