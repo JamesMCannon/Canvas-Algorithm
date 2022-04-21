@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 file_path = "./Data_compare/"
-f = "512hz"
-fpga_rev = "FPGA-Rev11p1"
+f = "33khz"
+fpga_rev = "FPGA-Rev12p0"
 
 simulation_file = file_path+f+'_fft_fbin_pwr.txt'
 
