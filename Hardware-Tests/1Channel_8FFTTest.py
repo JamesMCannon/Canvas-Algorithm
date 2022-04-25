@@ -42,23 +42,29 @@ StopFPGA = '\x05'
 SetLength = '\x06' #takes payload of uint32
 
 #define pic SetConfig payloads
-Nominal = '\x00'
-GSE_Loopback = '\x01'
-TX_Packet_Gen = '\x02'
-Rotation = '\x03'
-FFT_result = '\x04'
-Power_calc = '\x05'
-Acc_power = '\x06'
-Spectra_result = '\x07'
-pwr_ram_a = '\x06'
-pwr_ram_b = '\x07'
+Ingress_Write = '\x00'
+Ingress_Read = '\x01'
+Ch_0_Pkt_Gen = '\x02'
+ADC_And_Rotation = '\x03'
+FFT_Results = '\x04'
+FFT_Power = '\x05'
+Average_Power = '\x06'
+Specta_Results = '\x07'
+Power_RAM_port_A = '\x08'
+Power_RAM_port_B = '\x09'
+Real_RAM_port_A = '\x0A'
+Real_RAM_port_B = '\x0B'
+X_Spec_Real_Results = '\x0C'
+Imaginary_RAM_port_A = '\x0D'
+Imaginary_RAM_port_B = '\x0E'
+X_Spec_Imaginary_Results = '\x0F'
 
 #Generate input signal from file or aribitrarily
 fromFile = True
 
 if fromFile:
     inputs = 'Inputs/'
-    file = inputs+'hi_amp_60khz.txt'  
+    file = inputs+'hi_amp_512hz.txt'  
     channels0_td = read_FPGA_input(file,signed=True,show_plots=False)
 else:
     channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output='both')
@@ -76,7 +82,7 @@ FPGA_ser = serial.Serial("COM5",115200)
 #configure PIC
 pic_ser.write(b'\x03')
 pic_ser.write(bytes(SetConfig , 'utf-8'))
-pic_ser.write(bytes(FFT_result, 'utf-8')) #Change this 
+pic_ser.write(bytes(X_Spec_Real_Results, 'utf-8')) #Change this 
 pic_ser.write(lf)
 
 #Wait for acknowledge
@@ -154,10 +160,10 @@ all4 = vals[:,3]
 all5 = vals[:,4]
 all6 = vals[:,5]'''
 
-
+f = "512hz"
 #save data
 out_folder = 'HW-output'
-out_path = out_folder+'/FPGA-Rev11p1_FFT'+str(signal_freq0)
+out_path = out_folder+'/FPGA-Rev12p0_FFT'+f
 save_output_txt(bin,out_path+'bin','both',bits)
 save_output_txt(im,out_path+'img','both',bits)
 save_output_txt(re,out_path+'real','both',bits)
