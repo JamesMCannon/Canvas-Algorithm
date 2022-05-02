@@ -64,7 +64,8 @@ fromFile = True
 
 if fromFile:
     inputs = 'Inputs/'
-    file = inputs+'hi_amp_512hz.txt'  
+    f = "60kHz"
+    file = inputs+'hi_amp_'+f+'.txt'  
     channels0_td = read_FPGA_input(file,signed=True,show_plots=False)
 else:
     channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output='both')
@@ -77,12 +78,13 @@ test = channels0_td[0:num_samples]
 
 
 pic_ser = serial.Serial("COM4",115200)
-FPGA_ser = serial.Serial("COM5",115200)
+FPGA_ser = serial.Serial("COM5",512000)
 
 #configure PIC
+testmode = Specta_Results
 pic_ser.write(b'\x03')
 pic_ser.write(bytes(SetConfig , 'utf-8'))
-pic_ser.write(bytes(X_Spec_Real_Results, 'utf-8')) #Change this 
+pic_ser.write(bytes(testmode, 'utf-8')) #Change this 
 pic_ser.write(lf)
 
 #Wait for acknowledge
@@ -140,18 +142,67 @@ pic_ser.write(lf)
 val=wait4byte(pic_ser,ack,is_ascii=False) #PIC not sending ACK
 print('FPGA Started')
 
-vals,bits = readFPGA(FPGA_ser,readAllcon=False)
+vals,bits = readFPGA(FPGA_ser,readcon="none")
 #vals1,bits1 = readFPGA(FPGA_ser,readAllcon = True)
 
-bin= vals[:,0]
-im = vals[:,1]
-re = vals[:,2]
 
-'''sample = vals[:,0]
-adc2r = vals[:,1]
-adc1r = vals[:,2]
-adc2 = vals[:,3]
-adc1 = vals[:,4]'''
+out_folder = 'HW-output'
+FPGA_rev = "Rev13p5"
+
+if testmode == ADC_And_Rotation:
+    sample = vals[:,0]
+    adc2r = vals[:,1]
+    adc1r = vals[:,2]
+    adc2 = vals[:,3]
+    adc1 = vals[:,4]
+
+    out_path = out_folder+'/FPGA-'+FPGA_rev+'_ADC_And_Rotation'+f
+
+    save_output_txt(sample,out_path+'sample','both',bits)
+    save_output_txt(adc2r,out_path+'adc2r','both',bits)
+    save_output_txt(adc1r,out_path+'adc1r','both',bits)
+    save_output_txt(adc2,out_path+'adc2','both',bits)
+    save_output_txt(adc1,out_path+'adc1','both',bits)
+
+elif testmode == FFT_Results:
+    bin= vals[:,0]
+    im = vals[:,1]
+    re = vals[:,2]
+
+    out_path = out_folder+'/FPGA-'+FPGA_rev+'_FFT'+f
+
+    save_output_txt(bin,out_path+'bin','both',bits)
+    save_output_txt(im,out_path+'img','both',bits)
+    save_output_txt(re,out_path+'real','both',bits)
+
+elif testmode == FFT_Power:
+    bin = vals[:,0]
+    pwr = vals[:,1]
+
+    out_path = out_folder+'/FPGA-'+FPGA_rev+'_FFT_PWR'+f
+
+    save_output_txt(bin,out_path+'bin','both',bits)
+    save_output_txt(pwr,out_path+'pwr','both',bits)
+
+elif testmode == Average_Power:
+    bin = vals[:,0]
+    pwr = vals[:,1]
+
+    out_path = out_folder+'/FPGA-'+FPGA_rev+'_AVG_PWR'+f
+
+    save_output_txt(bin,out_path+'bin','both',bits)
+    save_output_txt(pwr,out_path+'pwr','both',bits)
+elif testmode == Specta_Results:
+    bin = vals[:,0] 
+    comp_rst= vals[:,1] 
+    uncomp_rst = vals[:,2] 
+
+    out_path = out_folder+'/FPGA-'+FPGA_rev+'_Spectra_Result'+f
+
+    save_output_txt(bin,out_path+'bin','both',bits)
+    save_output_txt(comp_rst,out_path+'compressed_result','both',bits)
+    save_output_txt(uncomp_rst,out_path+'uncompressed_result','both',bits)
+
 
 '''all1 = vals[:,0]
 all2 = vals[:,1]
@@ -160,19 +211,12 @@ all4 = vals[:,3]
 all5 = vals[:,4]
 all6 = vals[:,5]'''
 
-f = "512hz"
-#save data
-out_folder = 'HW-output'
-out_path = out_folder+'/FPGA-Rev12p0_FFT'+f
-save_output_txt(bin,out_path+'bin','both',bits)
-save_output_txt(im,out_path+'img','both',bits)
-save_output_txt(re,out_path+'real','both',bits)
+'''word1 = vals[:,0]
+word2 = vals[:,1]
+word3 = vals[:,2]'''
 
-'''save_output_txt(sample,out_path+'sample','both',bits)
-save_output_txt(adc2r,out_path+'adc2r','both',bits)
-save_output_txt(adc1r,out_path+'adc1r','both',bits)
-save_output_txt(adc2,out_path+'adc2','both',bits)
-save_output_txt(adc1,out_path+'adc1','both',bits)'''
+
+#save data
 
 
 '''save_output_txt(all1,out_path+'1','both',bits)
@@ -183,6 +227,12 @@ save_output_txt(all5,out_path+'5','both',bits)
 save_output_txt(all6,out_path+'6','both',bits)
 '''
 
+
+'''out_path = out_folder+'/FPGA-Rev13p5_Specta_Results12_'+f
+save_output_txt(word1,out_path+'Word_1','both',bits)
+save_output_txt(word2,out_path+'Word_2','both',bits)
+save_output_txt(word3,out_path+'Word_3','both',bits)
+'''
 v=int(vals[0][0])
 print('First Entry: ',v) #Let's look at the first datum
 

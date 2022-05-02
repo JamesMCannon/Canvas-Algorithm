@@ -19,7 +19,7 @@ def wait4byte(ser,ack,is_ascii=True,byte_size=2):
                 ack_read = True
     return val
 
-def readFPGA(ser, readAllcon = False):
+def readFPGA(ser, readcon = 'none'):
     #define data modes
     tx_packet_gen = b'\x02'
     rotation = b'\x03'
@@ -78,19 +78,29 @@ def readFPGA(ser, readAllcon = False):
         word_length = 12 #bytes
         bits = 'u-64'
         bins = True #do the first 2 bytes of payload word denote sample/bin #?
-    elif readAllcon:
+    elif readcon == 'all':
         print("new test mode, read all")
-        word_length =12 #dummy, gets over written in 91
+        word_length = 12 #dummy, gets over written in 91
+    elif readcon == '12':
+        print("new test mode, reading 12 byte words")
+        word_length = 12 #dummy, gets over written in 91
     else:
-        raise Exception("Unexpected Test Mode")
+        print("Unexpected Test Mode - Forcing ReadAll")
+        word_length = 12
+        readcon = 'all'
+        #raise Exception("Unexpected Test Mode")
 
     words = int(length/word_length)
 
     #read in payload 
-    if readAllcon:
+    if readcon == 'all':
         words=16500
         vals = readAll(words,ser)
         bits = 'u-16'
+    elif readcon == '12':
+        words=16500
+        vals = read12(words,ser)
+        bits = 's-32'
     elif test_mode==tx_packet_gen:
         raise Exception("Packet Gen not yet supported")
     elif test_mode == rotation:
@@ -164,6 +174,20 @@ def readSpec(words,ser):
         vals[i][0] = cur_bin
         vals[i][1] = comp_rst
         vals[i][2] = uncomp_rst
+    return vals
+
+def read12(words, ser):
+    vals  = np.zeros((words,3),dtype=np.uint32)
+    for i in range(words):
+        if i%1000==0:
+            print("reading vals ", i)
+        v1 = ser.read(4)
+        v2 = ser.read(4)
+        v3 = ser.read(4)
+
+        vals[i][0] = int.from_bytes(v1, 'big',signed=True)
+        vals[i][1] = int.from_bytes(v2, 'big',signed=True)
+        vals[i][2] = int.from_bytes(v3, 'big',signed=True)
     return vals
 
 def readAll(words,ser): #basic read function, reads in two-byte intervals
