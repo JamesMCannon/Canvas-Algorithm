@@ -166,8 +166,8 @@ if testmode == ADC_And_Rotation:
 
 elif testmode == FFT_Results:
     bin= vals[:,0]
-    im = vals[:,1]
-    re = vals[:,2]
+    re = vals[:,1]
+    im = vals[:,2]
 
     out_path = out_folder+'/FPGA-'+FPGA_rev+'_FFT'+f
 

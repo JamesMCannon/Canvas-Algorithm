@@ -141,12 +141,12 @@ def readFFT(words,ser):
     for i in range(words):
         cur_bin = int.from_bytes(ser.read(2),'big')
         unused = ser.read(2)
-        iFFT = int.from_bytes(ser.read(4),'big',signed=True)
         rFFT = int.from_bytes(ser.read(4),'big',signed=True)
+        iFFT = int.from_bytes(ser.read(4),'big',signed=True)
 
         vals[i][0] = cur_bin
-        vals[i][1] = iFFT
-        vals[i][2] = rFFT
+        vals[i][1] = rFFT
+        vals[i][2] = iFFT
     return vals
 
 def readPwr(words,ser): #both with power and accumulated power
