@@ -150,17 +150,19 @@ out_folder = 'HW-output'
 FPGA_rev = "Rev13p5"
 
 if testmode == ADC_And_Rotation:
-    sample = vals[:,0]
+    adc3r = vals[:,0]
     adc2r = vals[:,1]
     adc1r = vals[:,2]
-    adc2 = vals[:,3]
-    adc1 = vals[:,4]
+    adc3 = vals[:,3]
+    adc2 = vals[:,4]
+    adc1 = vals[:,5]
 
     out_path = out_folder+'/FPGA-'+FPGA_rev+'_ADC_And_Rotation'+f
 
-    save_output_txt(sample,out_path+'sample','both',bits)
+    save_output_txt(adc3r,out_path+'adc3r','both',bits)
     save_output_txt(adc2r,out_path+'adc2r','both',bits)
     save_output_txt(adc1r,out_path+'adc1r','both',bits)
+    save_output_txt(adc3,out_path+'adc3','both',bits)
     save_output_txt(adc2,out_path+'adc2','both',bits)
     save_output_txt(adc1,out_path+'adc1','both',bits)
 

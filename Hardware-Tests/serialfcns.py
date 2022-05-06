@@ -119,20 +119,21 @@ def readFPGA(ser, readcon = 'none'):
     return vals,bits
 
 def readRotate(words,ser):
-    vals = np.zeros((words,5))
+    vals = np.zeros((words,6))
     for i in range(words):
-        sample = int.from_bytes(ser.read(2), 'big')
-        unused = ser.read(2)
+        adc3_r = int.from_bytes(ser.read(2), 'big')
         adc2_r = int.from_bytes(ser.read(2), 'big')
         adc1_r = int.from_bytes(ser.read(2),'big')
+        adc3 = int.from_bytes(ser.read(2), 'big')
         adc2 = int.from_bytes(ser.read(2), 'big')
         adc1 = int.from_bytes(ser.read(2), 'big')
 
-        vals[i][0] = sample
+        vals[i][0] = adc3_r
         vals[i][1] = adc2_r
         vals[i][2] = adc1_r
-        vals[i][3] = adc2
-        vals[i][4] = adc1
+        vals[i][3] = adc3
+        vals[i][4] = adc2
+        vals[i][5] = adc3
     return vals
 
 
