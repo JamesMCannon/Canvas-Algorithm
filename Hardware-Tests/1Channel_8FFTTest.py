@@ -2,13 +2,14 @@ from encodings import utf_8
 from multiprocessing.connection import wait
 import os
 import sys
+from urllib import response
 sys.path.append("..\Canvas-Algorithm") #import functions from parent directory
 import serial #import serial library
 import time
 import numpy as np
 from numpy import random
 from saveas import save_output_txt
-from serialfcns import wait4byte, readFPGA, ser_write, ready_check
+from serialfcns import wait4byte, readFPGA, ser_write, ready_check, response_check
 from inputstimulus import test_signal
 
 from readFPGA import read_FPGA_input, read_INT_input, quick_compare, flatten, twos_complement
@@ -84,7 +85,10 @@ pic_ser = serial.Serial("COM4",115200)
 #reset PIC
 ser_write(pic_ser,ResetPIC+lf,True)
 #val=wait4byte(pic_ser,ack,is_ascii=False)
+#response_check(pic_ser,ack)
 #print('Reset Received')
+response_check(pic_ser,initiated)
+print('PIC Reset')
 
 '''ready = initiated
 ack_read = False
@@ -98,8 +102,8 @@ while ack_read == False:
             val=v
         if val == ready:
             ack_read = True'''
-ready_check(pic_ser,initiated)
-print('PIC Reset')
+#ready_check(pic_ser,initiated)
+
 
 #configure PIC
 testmode = Specta_Results
@@ -112,7 +116,8 @@ pic_ser.write(testmode) #Change this
 pic_ser.write(lf)'''
 
 #Wait for acknowledge
-val=wait4byte(pic_ser,ack,is_ascii=False)
+#val=wait4byte(pic_ser,ack,is_ascii=False)
+response_check(pic_ser,ack)
 print('FPGA Configured')
 
 #Set number of samples to be buffered
@@ -125,7 +130,8 @@ pic_ser.write(num_samples.to_bytes(4,'big',signed=False))
 pic_ser.write(lf)'''
 
 #Wait for acknowledge
-val=wait4byte(pic_ser,ack,is_ascii=False)
+#val=wait4byte(pic_ser,ack,is_ascii=False)
+response_check(pic_ser,ack)
 print('Data Length Set')
 t0=time.perf_counter()
 #buffer data
@@ -140,9 +146,11 @@ for i in test:
         print('buffering ', var)
     var = var+1
     #val=wait4byte(pic_ser,ack,is_ascii=False)
+    #response_check(pic_ser,ack)
 
 #check for complete from PIC
-ready_check(pic_ser,complete)
+#ready_check(pic_ser,complete)
+response_check(pic_ser,complete)
 '''ready = b'Ready.\n'
 ack_read = False
 val = ''
@@ -167,7 +175,8 @@ ser_write(pic_ser,StartFPGA+lf)
 #pic_ser.write(lf)
 
 #Wait for acknowledge
-val=wait4byte(pic_ser,ack,is_ascii=False) #PIC not sending ACK
+#val=wait4byte(pic_ser,ack,is_ascii=False) 
+response_check(pic_ser,ack)
 print('FPGA Started')
 
 vals,bits = readFPGA(FPGA_ser,readcon="none")

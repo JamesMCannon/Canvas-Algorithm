@@ -19,14 +19,20 @@ def wait4byte(ser,ack,is_ascii=True,byte_size=2):
                 ack_read = True
     return val
 
-def ser_write(ser, command, len_header = True):
-    if len_header:
-        msg_len = len(command)
-        header = msg_len.to_bytes(1,'big')
-        ser.write(header)
-    ser.write(command)
-    return
-
+def response_check(ser,ack,dump_line = True):
+    msg_len = len(ack)
+    ack_read = False
+    val = ''
+    while ack_read == False:
+        if (ser.in_waiting > 0):
+            if dump_line:
+                if ser.in_waiting>msg_len: #clear to end of serial line
+                    dump = ser.read(ser.in_waiting-msg_len) 
+            else:
+                val = ser.read(msg_len)
+            if val == ack:
+                ack_read = True
+    return 
 
 def ready_check(ser,ready):
     msg_len = len(ready)
@@ -42,6 +48,15 @@ def ready_check(ser,ready):
             if val == ready:
                 ack_read = True
     return
+
+def ser_write(ser, command, len_header = True):
+    if len_header:
+        msg_len = len(command)
+        header = msg_len.to_bytes(1,'big')
+        ser.write(header)
+    ser.write(command)
+    return
+
 
 
 def readFPGA(ser, readcon = 'none'):
