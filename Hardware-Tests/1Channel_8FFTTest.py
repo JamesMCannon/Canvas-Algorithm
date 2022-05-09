@@ -8,7 +8,7 @@ import time
 import numpy as np
 from numpy import random
 from saveas import save_output_txt
-from serialfcns import wait4byte, readFPGA, ser_write
+from serialfcns import wait4byte, readFPGA, ser_write, ready_check
 from inputstimulus import test_signal
 
 from readFPGA import read_FPGA_input, read_INT_input, quick_compare, flatten, twos_complement
@@ -31,7 +31,7 @@ n_acc = 8                   # number of FFTs to accummulate
 ack = b'\x06\x0A'
 lf = b'\x0A'
 delim = b'\x2C'
-complete = b'\nReady.'
+complete = b'Ready.\n'
 initiated = b'\nInitiating.\n'
 
 #define pic packet headers
@@ -84,9 +84,9 @@ pic_ser = serial.Serial("COM4",115200)
 #reset PIC
 ser_write(pic_ser,ResetPIC+lf,True)
 #val=wait4byte(pic_ser,ack,is_ascii=False)
-print('Reset Received')
+#print('Reset Received')
 
-ready = initiated
+'''ready = initiated
 ack_read = False
 val = ''
 while ack_read == False:
@@ -97,7 +97,8 @@ while ack_read == False:
             v = pic_ser.read(pic_ser.in_waiting)
             val=v
         if val == ready:
-            ack_read = True
+            ack_read = True'''
+ready_check(pic_ser,initiated)
 print('PIC Reset')
 
 #configure PIC
@@ -141,7 +142,8 @@ for i in test:
     #val=wait4byte(pic_ser,ack,is_ascii=False)
 
 #check for complete from PIC
-ready = b'Ready.\n'
+ready_check(pic_ser,complete)
+'''ready = b'Ready.\n'
 ack_read = False
 val = ''
 while ack_read == False:
@@ -152,8 +154,7 @@ while ack_read == False:
             v = pic_ser.read(pic_ser.in_waiting)
             val=v
         if val == ready:
-            ack_read = True
-
+            ack_read = True'''
 
 t1 = time.perf_counter()
 del_t = t1-t0

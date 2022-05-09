@@ -21,12 +21,27 @@ def wait4byte(ser,ack,is_ascii=True,byte_size=2):
 
 def ser_write(ser, command, len_header = True):
     if len_header:
-        length = len(command)
-        header = length.to_bytes(1,'big')
+        msg_len = len(command)
+        header = msg_len.to_bytes(1,'big')
         ser.write(header)
     ser.write(command)
     return
 
+
+def ready_check(ser,ready):
+    msg_len = len(ready)
+    ack_read = False
+    val = ''
+    while ack_read == False:
+        if (ser.in_waiting > 0):
+            if ser.in_waiting>msg_len:
+                dump = ser.read(ser.in_waiting-msg_len)
+            else:
+                v = ser.read(ser.in_waiting)
+                val=v
+            if val == ready:
+                ack_read = True
+    return
 
 
 def readFPGA(ser, readcon = 'none'):
