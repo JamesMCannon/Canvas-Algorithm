@@ -1,23 +1,7 @@
-
 from tkinter import E
 import serial #import serial library
 import time
 import numpy as np
-
-def wait4byte(ser,ack,is_ascii=True,byte_size=2):
-    ready = b'Ready.\n'
-    ack_read = False
-    val = ''
-    while ack_read == False:
-        if (ser.in_waiting > 0):
-            v = ser.read(byte_size)
-            if is_ascii:
-                val = v.decode('ascii')
-            else:
-                val=v
-            if val == ack or val == ready:
-                ack_read = True
-    return val
 
 def response_check(ser,ack,dump_line = True):
     msg_len = len(ack)
@@ -28,26 +12,11 @@ def response_check(ser,ack,dump_line = True):
             if dump_line:
                 if ser.in_waiting>msg_len: #clear to end of serial line
                     dump = ser.read(ser.in_waiting-msg_len) 
-            else:
-                val = ser.read(msg_len)
+            
+            val = ser.read(msg_len)
             if val == ack:
                 ack_read = True
     return 
-
-def ready_check(ser,ready):
-    msg_len = len(ready)
-    ack_read = False
-    val = ''
-    while ack_read == False:
-        if (ser.in_waiting > 0):
-            if ser.in_waiting>msg_len:
-                dump = ser.read(ser.in_waiting-msg_len)
-            else:
-                v = ser.read(ser.in_waiting)
-                val=v
-            if val == ready:
-                ack_read = True
-    return
 
 def ser_write(ser, command, len_header = True):
     if len_header:
@@ -56,8 +25,6 @@ def ser_write(ser, command, len_header = True):
         ser.write(header)
     ser.write(command)
     return
-
-
 
 def readFPGA(ser, readcon = 'none'):
     #define data modes
@@ -69,16 +36,10 @@ def readFPGA(ser, readcon = 'none'):
     spec_result = b'\x07'
 
     #define sycn bytes
-    s1 = b'\x35'
-    s2= b'\x2E'
-    s3 = b'\xF8'
-    s4 = b'\x53'
+    sync = b'\x35\x2E\xF8\x53'
 
     #Synchronize with expected packet
-    r1=wait4byte(ser,s1,False,1)
-    r2=wait4byte(ser,s2,False,1)
-    r3=wait4byte(ser,s3,False,1)
-    r4=wait4byte(ser,s4,False,1)
+    response_check(ser,sync,dump_line=False)
 
     #extract header info
     alg_id = ser.read(1)
@@ -173,7 +134,7 @@ def readRotate(words,ser):
         vals[i][2] = adc1_r
         vals[i][3] = adc3
         vals[i][4] = adc2
-        vals[i][5] = adc3
+        vals[i][5] = adc1
     return vals
 
 

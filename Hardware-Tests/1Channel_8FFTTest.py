@@ -9,7 +9,7 @@ import time
 import numpy as np
 from numpy import random
 from saveas import save_output_txt
-from serialfcns import wait4byte, readFPGA, ser_write, ready_check, response_check
+from serialfcns import readFPGA, ser_write, ready_check, response_check
 from inputstimulus import test_signal
 
 from readFPGA import read_FPGA_input, read_INT_input, quick_compare, flatten, twos_complement
@@ -80,57 +80,31 @@ test = channels0_td[0:num_samples]
 
 #initialize serial ports
 pic_ser = serial.Serial("COM4",115200)
-#FPGA_ser = serial.Serial("COM5",512000)
+FPGA_ser = serial.Serial("COM5",512000)
 
 #reset PIC
+time.sleep(0.5)
 ser_write(pic_ser,ResetPIC+lf,True)
-#val=wait4byte(pic_ser,ack,is_ascii=False)
+time.sleep(0.5)
 #response_check(pic_ser,ack)
 #print('Reset Received')
 response_check(pic_ser,initiated)
 print('PIC Reset')
 
-'''ready = initiated
-ack_read = False
-val = ''
-while ack_read == False:
-    if (pic_ser.in_waiting > 0):
-        if pic_ser.in_waiting>13:
-            dump = pic_ser.read(pic_ser.in_waiting-13)
-        else:
-            v = pic_ser.read(pic_ser.in_waiting)
-            val=v
-        if val == ready:
-            ack_read = True'''
-#ready_check(pic_ser,initiated)
-
-
 #configure PIC
-testmode = Specta_Results
+testmode = ADC_And_Rotation
 ser_write(pic_ser,SetConfig+testmode+lf)
 
-
-'''pic_ser.write(b'\x03')
-pic_ser.write(SetConfig)
-pic_ser.write(testmode) #Change this 
-pic_ser.write(lf)'''
-
 #Wait for acknowledge
-#val=wait4byte(pic_ser,ack,is_ascii=False)
 response_check(pic_ser,ack)
 print('FPGA Configured')
 
 #Set number of samples to be buffered
 to_Send = num_samples.to_bytes(4,'big',signed=False)
 ser_write(pic_ser,SetLength+to_Send+lf)
-'''pic_ser.write(b'\x06')
-pic_ser.write(SetLength)
-to_Send = num_samples.to_bytes(4,'big',signed=False)
-pic_ser.write(num_samples.to_bytes(4,'big',signed=False))
-pic_ser.write(lf)'''
+
 
 #Wait for acknowledge
-#val=wait4byte(pic_ser,ack,is_ascii=False)
 response_check(pic_ser,ack)
 print('Data Length Set')
 t0=time.perf_counter()
@@ -138,31 +112,14 @@ t0=time.perf_counter()
 var = 0
 for i in test:
     val = i.to_bytes(2,byteorder='big',signed=True)
-    #data_len = b'\x07'
-    #to_write = data_len + Data + val + delim + val + lf
-    #pic_ser.write(to_write)
     ser_write(pic_ser,Data + val + delim + val + lf)
     if var%1000 == 0:
         print('buffering ', var)
     var = var+1
-    #val=wait4byte(pic_ser,ack,is_ascii=False)
     #response_check(pic_ser,ack)
 
 #check for complete from PIC
-#ready_check(pic_ser,complete)
 response_check(pic_ser,complete)
-'''ready = b'Ready.\n'
-ack_read = False
-val = ''
-while ack_read == False:
-    if (pic_ser.in_waiting > 0):
-        if pic_ser.in_waiting>7:
-            dump = pic_ser.read(pic_ser.in_waiting-7)
-        else:
-            v = pic_ser.read(pic_ser.in_waiting)
-            val=v
-        if val == ready:
-            ack_read = True'''
 
 t1 = time.perf_counter()
 del_t = t1-t0
@@ -170,12 +127,8 @@ print('Data buffered after %f seconds', del_t)
 
 #start
 ser_write(pic_ser,StartFPGA+lf)
-#pic_ser.write(b'\x02')
-#pic_ser.write(StartFPGA)
-#pic_ser.write(lf)
 
 #Wait for acknowledge
-#val=wait4byte(pic_ser,ack,is_ascii=False) 
 response_check(pic_ser,ack)
 print('FPGA Started')
 
