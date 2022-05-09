@@ -8,7 +8,7 @@ import time
 import numpy as np
 from numpy import random
 from saveas import save_output_txt
-from serialfcns import wait4byte, readFPGA
+from serialfcns import wait4byte, readFPGA, ser_write
 from inputstimulus import test_signal
 
 from readFPGA import read_FPGA_input, read_INT_input, quick_compare, flatten, twos_complement
@@ -31,34 +31,34 @@ n_acc = 8                   # number of FFTs to accummulate
 ack = b'\x06\x0A'
 lf = b'\x0A'
 delim = b'\x2C'
-complete = '\nReady.'
+complete = b'\nReady.'
 initiated = b'\nInitiating.\n'
 
 #define pic packet headers
-SetConfig = '\x01'
+SetConfig = b'\x01'
 Data = b'\x02'
-ResetPIC = '\x03' #Just this, need to wait ~2 seconds after sending command
-StartFPGA = '\x04'
-StopFPGA = '\x05'
-SetLength = '\x06' #takes payload of uint32
+ResetPIC = b'\x03' #Just this, need to wait ~2 seconds after sending command
+StartFPGA = b'\x04'
+StopFPGA = b'\x05'
+SetLength = b'\x06' #takes payload of uint32
 
 #define pic SetConfig payloads
-Ingress_Write = '\x00'
-Ingress_Read = '\x01'
-Ch_0_Pkt_Gen = '\x02'
-ADC_And_Rotation = '\x03'
-FFT_Results = '\x04'
-FFT_Power = '\x05'
-Average_Power = '\x06'
-Specta_Results = '\x07'
-Power_RAM_port_A = '\x08'
-Power_RAM_port_B = '\x09'
-Real_RAM_port_A = '\x0A'
-Real_RAM_port_B = '\x0B'
-X_Spec_Real_Results = '\x0C'
-Imaginary_RAM_port_A = '\x0D'
-Imaginary_RAM_port_B = '\x0E'
-X_Spec_Imaginary_Results = '\x0F'
+Ingress_Write = b'\x00'
+Ingress_Read = b'\x01'
+Ch_0_Pkt_Gen = b'\x02'
+ADC_And_Rotation = b'\x03'
+FFT_Results = b'\x04'
+FFT_Power = b'\x05'
+Average_Power = b'\x06'
+Specta_Results = b'\x07'
+Power_RAM_port_A = b'\x08'
+Power_RAM_port_B = b'\x09'
+Real_RAM_port_A = b'\x0A'
+Real_RAM_port_B = b'\x0B'
+X_Spec_Real_Results = b'\x0C'
+Imaginary_RAM_port_A = b'\x0D'
+Imaginary_RAM_port_B = b'\x0E'
+X_Spec_Imaginary_Results = b'\x0F'
 
 #Generate input signal from file or aribitrarily
 fromFile = True
@@ -82,9 +82,7 @@ pic_ser = serial.Serial("COM4",115200)
 #FPGA_ser = serial.Serial("COM5",512000)
 
 #reset PIC
-pic_ser.write(b'\x02')
-pic_ser.write(bytes(ResetPIC, 'utf-8'))
-pic_ser.write(lf)
+ser_write(pic_ser,ResetPIC+lf,True)
 #val=wait4byte(pic_ser,ack,is_ascii=False)
 print('Reset Received')
 
@@ -104,21 +102,26 @@ print('PIC Reset')
 
 #configure PIC
 testmode = Specta_Results
-pic_ser.write(b'\x03')
-pic_ser.write(bytes(SetConfig , 'utf-8'))
-pic_ser.write(bytes(testmode, 'utf-8')) #Change this 
-pic_ser.write(lf)
+ser_write(pic_ser,SetConfig+testmode+lf)
+
+
+'''pic_ser.write(b'\x03')
+pic_ser.write(SetConfig)
+pic_ser.write(testmode) #Change this 
+pic_ser.write(lf)'''
 
 #Wait for acknowledge
 val=wait4byte(pic_ser,ack,is_ascii=False)
 print('FPGA Configured')
 
 #Set number of samples to be buffered
-pic_ser.write(b'\x06')
-pic_ser.write(bytes(SetLength, 'utf-8'))
+to_Send = num_samples.to_bytes(4,'big',signed=False)
+ser_write(pic_ser,SetLength+to_Send+lf)
+'''pic_ser.write(b'\x06')
+pic_ser.write(SetLength)
 to_Send = num_samples.to_bytes(4,'big',signed=False)
 pic_ser.write(num_samples.to_bytes(4,'big',signed=False))
-pic_ser.write(lf)
+pic_ser.write(lf)'''
 
 #Wait for acknowledge
 val=wait4byte(pic_ser,ack,is_ascii=False)
@@ -128,9 +131,10 @@ t0=time.perf_counter()
 var = 0
 for i in test:
     val = i.to_bytes(2,byteorder='big',signed=True)
-    data_len = b'\x07'
-    to_write = data_len + Data + val + delim + val + lf
-    pic_ser.write(to_write)
+    #data_len = b'\x07'
+    #to_write = data_len + Data + val + delim + val + lf
+    #pic_ser.write(to_write)
+    ser_write(pic_ser,Data + val + delim + val + lf)
     if var%1000 == 0:
         print('buffering ', var)
     var = var+1
@@ -156,9 +160,10 @@ del_t = t1-t0
 print('Data buffered after %f seconds', del_t)
 
 #start
-pic_ser.write(b'\x02')
-pic_ser.write(bytes(StartFPGA , 'utf-8'))
-pic_ser.write(lf)
+ser_write(pic_ser,StartFPGA+lf)
+#pic_ser.write(b'\x02')
+#pic_ser.write(StartFPGA)
+#pic_ser.write(lf)
 
 #Wait for acknowledge
 val=wait4byte(pic_ser,ack,is_ascii=False) #PIC not sending ACK

@@ -19,6 +19,16 @@ def wait4byte(ser,ack,is_ascii=True,byte_size=2):
                 ack_read = True
     return val
 
+def ser_write(ser, command, len_header = True):
+    if len_header:
+        length = len(command)
+        header = length.to_bytes(1,'big')
+        ser.write(header)
+    ser.write(command)
+    return
+
+
+
 def readFPGA(ser, readcon = 'none'):
     #define data modes
     tx_packet_gen = b'\x02'
