@@ -32,6 +32,7 @@ ack = b'\x06\x0A'
 lf = b'\x0A'
 delim = b'\x2C'
 complete = '\nReady.'
+initiated = '\nInitiating.\n'
 
 #define pic packet headers
 SetConfig = '\x01'
@@ -76,9 +77,29 @@ test = channels0_td[0:num_samples]
 
 #test = [i for i in range(num_samples)]
 
-
+#initialize serial ports
 pic_ser = serial.Serial("COM4",115200)
 FPGA_ser = serial.Serial("COM5",512000)
+
+#reset PIC
+pic_ser.write(b'\x02')
+pic_ser.write(ResetPIC)
+pic_ser.write(lf)
+val=wait4byte(pic_ser,ack,is_ascii=False)
+print('Reset Received')
+
+ready = initiated
+ack_read = False
+val = ''
+while ack_read == False:
+    if (pic_ser.in_waiting > 0):
+        if pic_ser.in_waiting>12:
+            dump = pic_ser.read(pic_ser.in_waiting-12)
+        else:
+            v = pic_ser.read(pic_ser.in_waiting)
+            val=v
+        if val == ready:
+            ack_read = True
 
 #configure PIC
 testmode = Specta_Results
