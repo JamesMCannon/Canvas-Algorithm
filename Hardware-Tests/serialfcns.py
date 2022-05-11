@@ -27,15 +27,7 @@ def ser_write(ser, command, len_header = True):
     ser.write(command)
     return
 
-def readFPGA(ser, readcon = 'none'):
-    #define data modes
-    tx_packet_gen = b'\x02'
-    rotation = b'\x03'
-    fft_result = b'\x04'
-    power_calc = b'\x05'
-    acc_power = b'\x06'   
-    spec_result = b'\x07'
-
+def read_header(ser):
     #define sycn bytes
     sync = b'\x35\x2E\xF8\x53'
 
@@ -49,6 +41,19 @@ def readFPGA(ser, readcon = 'none'):
     length = int.from_bytes(payload_len,'big') +1 #'big' => most significant byte is at the beginning of the byte array
     mask = b'\x0f' 
     test_mode = bytes([test_mode[0] & mask[0]])
+
+    return length,test_mode
+
+def readFPGA(ser, num_read = 1, readcon = 'none'):
+    #define data modes
+    tx_packet_gen = b'\x02'
+    rotation = b'\x03'
+    fft_result = b'\x04'
+    power_calc = b'\x05'
+    acc_power = b'\x06'   
+    spec_result = b'\x07'
+
+    length,test_mode = read_header(ser)
 
     if test_mode==tx_packet_gen:
         print("tx_packet_gen")
@@ -93,31 +98,31 @@ def readFPGA(ser, readcon = 'none'):
         #raise Exception("Unexpected Test Mode")
 
     words = int(length/word_length)
-
+    for i in range(num_read):
     #read in payload 
-    if readcon == 'all':
-        words=16500
-        vals = readAll(words,ser)
-        bits = 'u-16'
-    elif readcon == '12':
-        words=16500
-        vals = read12(words,ser)
-        bits = 's-32'
-    elif test_mode==tx_packet_gen:
-        raise Exception("Packet Gen not yet supported")
-    elif test_mode == rotation:
-        vals = readRotate(words,ser)
-    elif test_mode == fft_result:
-        vals = readFFT(words,ser)
-    elif test_mode == power_calc:
-        vals = readPwr(words,ser)
-    elif test_mode == acc_power:
-        vals = readPwr(words,ser)
-    elif test_mode == spec_result:
-        vals = readSpec(words,ser)
-    else:
-        raise Exception("Unexpected Test Mode")
-
+        if readcon == 'all':
+            words=16500
+            vals = readAll(words,ser)
+            bits = 'u-16'
+        elif readcon == '12':
+            words=16500
+            vals = read12(words,ser)
+            bits = 's-32'
+        elif test_mode==tx_packet_gen:
+            raise Exception("Packet Gen not yet supported")
+        elif test_mode == rotation:
+            vals = readRotate(words,ser)
+        elif test_mode == fft_result:
+            vals = readFFT(words,ser)
+        elif test_mode == power_calc:
+            vals = readPwr(words,ser)
+        elif test_mode == acc_power:
+            vals = readPwr(words,ser)
+        elif test_mode == spec_result:
+            vals = readSpec(words,ser)
+        else:
+            raise Exception("Unexpected Test Mode")
+            
     return vals,bits
 
 def readRotate(words,ser):

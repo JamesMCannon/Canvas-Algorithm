@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os.path
 # ---------------------------- save output text files ------------------------------
 
 # options for bits are s-16, u-16, s-32, u-64
@@ -35,15 +36,17 @@ def save_output_txt(out_array, out_path, out_type, bits):
 
 def save_FFT(out_array, out_path, out_type):
 
-    #set up headers
-    with open(out_name, 'a') as output:
-            output.write('FBin' + '\t') #bin number
-            output.write('FFTr' + '\t') #FFTr 
-            output.write('FFTi' + '\n') #FFTi 
-    
     #save data
     if out_type =='hex' or out_type =='both':
         out_name = out_path+'_hex.txt'
+
+        if not(os.path.exists(out_name)):
+        #set up headers if file doesn't already exist
+            with open(out_name, 'a') as output:
+                output.write('FBin' + '\t') #bin number
+                output.write('FFTr' + '\t') #FFTr 
+                output.write('FFTi' + '\n') #FFTi 
+        
         with open(out_name, 'a') as output:
             for x in out_array:
                 output.write(format(np.uint8(x[0]) & 0xff, '02X') + '\t') #bin number
@@ -51,6 +54,14 @@ def save_FFT(out_array, out_path, out_type):
                 output.write(format(np.int16(x[2]) & 0xffff, '04X') + '\n') #FFTi 
     if out_type == 'int' or out_type == 'both':
         out_name = out_path+'_int.txt'
+
+        if not(os.path.exists(out_name)):
+        #set up headers if file doesn't already exist
+            with open(out_name, 'a') as output:
+                output.write('FBin' + '\t') #bin number
+                output.write('FFTr' + '\t') #FFTr 
+                output.write('FFTi' + '\n') #FFTi 
+
         with open(out_name, 'a') as output:
             for x in out_array:
                 output.write(str(np.uint8(x[0])) + '\t') #bin number
