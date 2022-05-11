@@ -155,7 +155,7 @@ def readFFT(words,ser,outpath):
         vals[i][0] = cur_bin
         vals[i][1] = rFFT
         vals[i][2] = iFFT
-    save_FFT(vals,outpath+'_FFT')
+    save_FFT(vals,outpath+'_FFT',out_type='both')
     return vals
 
 def readPwr(words,ser): #both with power and accumulated power

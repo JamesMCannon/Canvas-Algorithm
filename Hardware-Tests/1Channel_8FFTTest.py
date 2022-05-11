@@ -9,7 +9,7 @@ import time
 import numpy as np
 from numpy import random
 from saveas import save_output_txt
-from serialfcns import readFPGA, ser_write, ready_check, response_check
+from serialfcns import readFPGA, ser_write, response_check
 from inputstimulus import test_signal
 
 from readFPGA import read_FPGA_input, read_INT_input, quick_compare, flatten, twos_complement
@@ -63,6 +63,7 @@ X_Spec_Imaginary_Results = b'\x0F'
 
 #Generate input signal from file or aribitrarily
 fromFile = True
+testmode = FFT_Results
 
 if fromFile:
     inputs = 'Inputs/'
@@ -92,7 +93,6 @@ response_check(pic_ser,initiated)
 print('PIC Reset')
 
 #configure PIC
-testmode = ADC_And_Rotation
 ser_write(pic_ser,SetConfig+testmode+lf)
 
 #Wait for acknowledge
@@ -136,7 +136,7 @@ out_folder = 'HW-output'
 FPGA_rev = "Rev14p1_"
 
 
-vals,bits = readFPGA(FPGA_ser,readcon="none",outpath=out_folder+'/FPGA-' + FPGA_rev + f)
+vals,bits = readFPGA(FPGA_ser,readcon="none",num_read=8,outpath=out_folder+'/FPGA-' + FPGA_rev + f)
 #vals1,bits1 = readFPGA(FPGA_ser,readAllcon = True)
 
 
@@ -164,10 +164,9 @@ elif testmode == FFT_Results:
 
     out_path = out_folder+'/FPGA-'+FPGA_rev+'_FFT'+f
 
-    save_output_txt(bin,out_path+'bin','both',bits)
-    save_output_txt(im,out_path+'img','both',bits)
-    save_output_txt(re,out_path+'real','both',bits)
-
+    #save_output_txt(bin,out_path+'bin','both',bits)
+    #save_output_txt(im,out_path+'img','both',bits)
+    #save_output_txt(re,out_path+'real','both',bits)
 elif testmode == FFT_Power:
     bin = vals[:,0]
     pwr = vals[:,1]

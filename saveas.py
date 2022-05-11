@@ -44,14 +44,14 @@ def save_FFT(out_array, out_path, out_type):
         #set up headers if file doesn't already exist
             with open(out_name, 'a') as output:
                 output.write('FBin' + '\t') #bin number
-                output.write('FFTr' + '\t') #FFTr 
+                output.write('FFTr' + '\t''\t') #FFTr 
                 output.write('FFTi' + '\n') #FFTi 
         
         with open(out_name, 'a') as output:
             for x in out_array:
-                output.write(format(np.uint8(x[0]) & 0xff, '02X') + '\t') #bin number
-                output.write(format(np.int16(x[1]) & 0xffff, '04X') + '\t') #FFTr 
-                output.write(format(np.int16(x[2]) & 0xffff, '04X') + '\n') #FFTi 
+                output.write(format(np.uint16(x[0]) & 0xffff, '04X') + '\t') #bin number
+                output.write(format(np.int32(x[1]) & 0xffffffff, '08X') + '\t') #FFTr 
+                output.write(format(np.int32(x[2]) & 0xffffffff, '08X') + '\n') #FFTi 
     if out_type == 'int' or out_type == 'both':
         out_name = out_path+'_int.txt'
 
@@ -64,9 +64,9 @@ def save_FFT(out_array, out_path, out_type):
 
         with open(out_name, 'a') as output:
             for x in out_array:
-                output.write(str(np.uint8(x[0])) + '\t') #bin number
-                output.write(str(np.int16(x[1])) + '\t') #FFTr 
-                output.write(str(np.int16(x[2])) + '\n') #FFTi 
+                output.write(str(np.uint16(x[0])) + '\t') #bin number
+                output.write(str(np.int32(x[1])) + '\t') #FFTr 
+                output.write(str(np.int32(x[2])) + '\n') #FFTi 
     return
 
 def saveascsv(fname, adds, outputfolder='output'):
