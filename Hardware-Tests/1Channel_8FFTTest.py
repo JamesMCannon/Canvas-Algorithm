@@ -50,7 +50,7 @@ Ch_0_Pkt_Gen = b'\x02'
 ADC_And_Rotation = b'\x03'
 FFT_Results = b'\x04'
 FFT_Power = b'\x05'
-Average_Power = b'\x06'
+#Average_Power = b'\x06' #no longer supported
 Specta_Results = b'\x07'
 Power_RAM_port_A = b'\x08'
 Power_RAM_port_B = b'\x09'
@@ -63,7 +63,7 @@ X_Spec_Imaginary_Results = b'\x0F'
 
 #Generate input signal from file or aribitrarily
 fromFile = True
-testmode = FFT_Results
+testmode = FFT_Power
 
 if fromFile:
     inputs = 'Inputs/'
@@ -173,17 +173,8 @@ elif testmode == FFT_Power:
 
     out_path = out_folder+'/FPGA-'+FPGA_rev+'_FFT_PWR'+f
 
-    save_output_txt(bin,out_path+'bin','both',bits)
-    save_output_txt(pwr,out_path+'pwr','both',bits)
-
-elif testmode == Average_Power:
-    bin = vals[:,0]
-    pwr = vals[:,1]
-
-    out_path = out_folder+'/FPGA-'+FPGA_rev+'_AVG_PWR'+f
-
-    save_output_txt(bin,out_path+'bin','both',bits)
-    save_output_txt(pwr,out_path+'pwr','both',bits)
+    #save_output_txt(bin,out_path+'bin','both',bits)
+    #save_output_txt(pwr,out_path+'pwr','both',bits)
 elif testmode == Specta_Results:
     bin = vals[:,0] 
     comp_rst= vals[:,1] 
@@ -191,9 +182,9 @@ elif testmode == Specta_Results:
 
     out_path = out_folder+'/FPGA-'+FPGA_rev+'_Spectra_Result'+f
 
-    save_output_txt(bin,out_path+'bin','both',bits)
-    save_output_txt(comp_rst,out_path+'compressed_result','both',bits)
-    save_output_txt(uncomp_rst,out_path+'uncompressed_result','both',bits)
+    #save_output_txt(bin,out_path+'bin','both',bits)
+    #save_output_txt(comp_rst,out_path+'compressed_result','both',bits)
+    #save_output_txt(uncomp_rst,out_path+'uncompressed_result','both',bits)
 
 
 '''all1 = vals[:,0]

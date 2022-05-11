@@ -111,7 +111,7 @@ def save_spectra(out_array, out_path, out_type):
         #set up headers if file doesn't already exist
             with open(out_name, 'a') as output:
                 output.write('SBin' + '\t') #bin number
-                output.write('Comp' + '\t') #Compressed result 
+                output.write('Comp' + '\t\t') #Compressed result 
                 output.write('Uncomp' + '\n') #Uncompressed result
         
         with open(out_name, 'a') as output:

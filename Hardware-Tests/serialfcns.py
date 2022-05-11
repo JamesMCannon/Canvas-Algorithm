@@ -115,7 +115,7 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
         elif test_mode == fft_result:
             vals = readFFT(words,ser,outpath)
         elif test_mode == power_calc:
-            name = outpath + 'spectra' 
+            name = outpath + '_spectra' 
             vals = readPwr(words,ser,name)
         elif test_mode == acc_power:
             name = outpath + '_acc' #doesn't exist in 14p0 
@@ -177,7 +177,7 @@ def readSpec(words,ser,outpath):
     vals = np.zeros((words,3),dtype=np.uint64)
     for i in range(words):
         cur_bin = int.from_bytes(ser.read(2),'big')
-        v=ser.read(4)
+        v=ser.read(2)
         mask = b'\x0f\xff'
         comp_rst = andbytes(v,mask)
         comp_rst = int.from_bytes(comp_rst,'big')
@@ -186,7 +186,7 @@ def readSpec(words,ser,outpath):
         vals[i][0] = cur_bin
         vals[i][1] = comp_rst
         vals[i][2] = uncomp_rst
-    save_spectra(vals,outpath + '_rebin')
+    save_spectra(vals,outpath + '_rebin',out_type='both')
     return vals
 
 def read12(words, ser):
