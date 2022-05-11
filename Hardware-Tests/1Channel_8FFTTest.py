@@ -132,12 +132,13 @@ ser_write(pic_ser,StartFPGA+lf)
 response_check(pic_ser,ack)
 print('FPGA Started')
 
-vals,bits = readFPGA(FPGA_ser,readcon="none")
+out_folder = 'HW-output'
+FPGA_rev = "Rev14p1_"
+
+
+vals,bits = readFPGA(FPGA_ser,readcon="none",outpath=out_folder+'/FPGA-' + FPGA_rev + f)
 #vals1,bits1 = readFPGA(FPGA_ser,readAllcon = True)
 
-
-out_folder = 'HW-output'
-FPGA_rev = "Rev14p1"
 
 if testmode == ADC_And_Rotation:
     adc3r = vals[:,0]

@@ -44,7 +44,7 @@ def read_header(ser):
 
     return length,test_mode
 
-def readFPGA(ser, num_read = 1, readcon = 'none'):
+def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-file'):
     #define data modes
     tx_packet_gen = b'\x02'
     rotation = b'\x03'
@@ -113,7 +113,7 @@ def readFPGA(ser, num_read = 1, readcon = 'none'):
         elif test_mode == rotation:
             vals = readRotate(words,ser)
         elif test_mode == fft_result:
-            vals = readFFT(words,ser)
+            vals = readFFT(words,ser,outpath)
         elif test_mode == power_calc:
             vals = readPwr(words,ser)
         elif test_mode == acc_power:
@@ -122,7 +122,7 @@ def readFPGA(ser, num_read = 1, readcon = 'none'):
             vals = readSpec(words,ser)
         else:
             raise Exception("Unexpected Test Mode")
-            
+
     return vals,bits
 
 def readRotate(words,ser):
@@ -144,7 +144,7 @@ def readRotate(words,ser):
     return vals
 
 
-def readFFT(words,ser):
+def readFFT(words,ser,outpath):
     vals = np.zeros((words,3))
     for i in range(words):
         cur_bin = int.from_bytes(ser.read(2),'big')
@@ -155,7 +155,7 @@ def readFFT(words,ser):
         vals[i][0] = cur_bin
         vals[i][1] = rFFT
         vals[i][2] = iFFT
-    save_FFT(vals)
+    save_FFT(vals,outpath+'_FFT')
     return vals
 
 def readPwr(words,ser): #both with power and accumulated power
