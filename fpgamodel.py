@@ -57,14 +57,14 @@ channel0_fd_real, channel0_fd_imag = canvas_fft(nFFT, fs, win, channels0_td, ove
 
 spec_pwr0 = fft_spec_power(channel0_fd_real, channel0_fd_imag, channel_num=0, show_plots=True, save_output='both')
 #spec_pwr1 = fft_spec_power(channel1_fd_real, channel1_fd_imag, channel_num=1, show_plots=False, save_output='both')
-xspec_pwr_r, xspec_pwr_i = fft_xspec_power(channel0_fd_real, channel0_fd_imag, channel1_fd_real, channel1_fd_imag, channel_nums=[0,1], show_plots=True, save_output='both')
+#xspec_pwr_r, xspec_pwr_i = fft_xspec_power(channel0_fd_real, channel0_fd_imag, channel1_fd_real, channel1_fd_imag, channel_nums=[0,1], show_plots=True, save_output='both')
 
 #spec_pwr0 = fft_spec_power(f_ar, f_ai, channel_num=0, show_plots=True, save_output='both')
 #spec_pwr1 = fft_spec_power(f_ar, f_ai, channel_num=1, show_plots=True, save_output='both')
 #xspec_pwr_r, xspec_pwr_i = fft_spec_power([channel0_fd_real], [channel0_fd_imag], [channel1_fd_real], [channel1_fd_imag], channel_nums=[0,1], show_plots=False, save_output='both')
 # STEP 5 -------------------- rebin and acc -------------------------------
 # functions written to rebin (avg in freq) and acc (avg in time)
-rebin_pwr0= rebin_likefpga(spec_pwr0, channel_num=0, show_plots=True, save_output=None)
+rebin_pwr0= rebin_likefpga(spec_pwr0, channel_num=0, show_plots=True, save_output='both')
 #rebin_pwr1= rebin_likefpga(spec_pwr1, channel_num=1, show_plots=False, save_output=None)
 
 #rebin_pwr_01_r= rebin_likefpga(xspec_pwr_r, channel_num=0, show_plots=False, save_output='both')
@@ -92,7 +92,7 @@ avg_pwr0 = rebin_canvas(acc_pwr0, n_acc, c_fbins, center_freqs, tx_bins=True, ch
 
 # STEP 7 ---------------- compress -------------------------
 # use spec compress or xspec compress for log2 compression
-#cpmrs_val0 = spec_compress(avg_pwr0, channel_num=0, show_plots=True, save_output='both')
+cpmrs_val0 = spec_compress(avg_pwr0, channel_num=0, show_plots=True, save_output='both')
 #cpmrs_val1 = spec_compress(avg_pwr1, channel_num=1, show_plots=False, save_output='both')
 
 #cmprs_val_r = xspec_compress(avg_pwr01_r, channel_num=0, show_plots=False, save_output='both')

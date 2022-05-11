@@ -2,6 +2,7 @@ from tkinter import E
 import serial #import serial library
 import time
 import numpy as np
+from saveas import save_FFT
 
 def response_check(ser,ack,dump_line = True):
     msg_len = len(ack)
@@ -149,6 +150,7 @@ def readFFT(words,ser):
         vals[i][0] = cur_bin
         vals[i][1] = rFFT
         vals[i][2] = iFFT
+    save_FFT(vals)
     return vals
 
 def readPwr(words,ser): #both with power and accumulated power
