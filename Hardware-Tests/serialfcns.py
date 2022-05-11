@@ -2,7 +2,7 @@ from tkinter import E
 import serial #import serial library
 import time
 import numpy as np
-from saveas import save_FFT
+from saveas import save_FFT, save_power, save_spectra
 
 def response_check(ser,ack,dump_line = True):
     msg_len = len(ack)
@@ -115,11 +115,13 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
         elif test_mode == fft_result:
             vals = readFFT(words,ser,outpath)
         elif test_mode == power_calc:
-            vals = readPwr(words,ser)
+            name = outpath + 'spectra' 
+            vals = readPwr(words,ser,name)
         elif test_mode == acc_power:
-            vals = readPwr(words,ser)
+            name = outpath + '_acc' #doesn't exist in 14p0 
+            vals = readPwr(words,ser,name)
         elif test_mode == spec_result:
-            vals = readSpec(words,ser)
+            vals = readSpec(words,ser,outpath)
         else:
             raise Exception("Unexpected Test Mode")
 
@@ -158,8 +160,8 @@ def readFFT(words,ser,outpath):
     save_FFT(vals,outpath+'_FFT',out_type='both')
     return vals
 
-def readPwr(words,ser): #both with power and accumulated power
-    vals = np.zeros((words,2))
+def readPwr(words,ser,outpath): #both with power and accumulated power
+    vals = np.zeros((words,2),dtype=np.uint64)
     for i in range(words):
         cur_bin = int.from_bytes(ser.read(2),'big')
         unused = ser.read(2)
@@ -167,11 +169,12 @@ def readPwr(words,ser): #both with power and accumulated power
 
         vals[i][0] = cur_bin
         vals[i][1] = pwr
+    save_power(vals,outpath,out_type='both')
     return vals
 
 
-def readSpec(words,ser):
-    vals = np.zeros((words,3))
+def readSpec(words,ser,outpath):
+    vals = np.zeros((words,3),dtype=np.uint64)
     for i in range(words):
         cur_bin = int.from_bytes(ser.read(2),'big')
         v=ser.read(4)
@@ -183,6 +186,7 @@ def readSpec(words,ser):
         vals[i][0] = cur_bin
         vals[i][1] = comp_rst
         vals[i][2] = uncomp_rst
+    save_spectra(vals,outpath + '_rebin')
     return vals
 
 def read12(words, ser):

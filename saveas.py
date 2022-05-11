@@ -44,7 +44,7 @@ def save_FFT(out_array, out_path, out_type):
         #set up headers if file doesn't already exist
             with open(out_name, 'a') as output:
                 output.write('FBin' + '\t') #bin number
-                output.write('FFTr' + '\t''\t') #FFTr 
+                output.write('FFTr' + '\t\t') #FFTr 
                 output.write('FFTi' + '\n') #FFTi 
         
         with open(out_name, 'a') as output:
@@ -68,6 +68,74 @@ def save_FFT(out_array, out_path, out_type):
                 output.write(str(np.int32(x[1])) + '\t') #FFTr 
                 output.write(str(np.int32(x[2])) + '\n') #FFTi 
     return
+
+def save_power(out_array, out_path, out_type):
+
+    #save data
+    if out_type =='hex' or out_type =='both':
+        out_name = out_path+'_hex.txt'
+
+        if not(os.path.exists(out_name)):
+        #set up headers if file doesn't already exist
+            with open(out_name, 'a') as output:
+                output.write('FBin' + '\t') #bin number
+                output.write('Power' + '\n') #FFT Power 
+   
+        with open(out_name, 'a') as output:
+            for x in out_array:
+                output.write(format(np.uint16(x[0]) & 0xffff, '04X') + '\t') #bin number
+                output.write(format(np.uint64(x[1]) & 0xffffffffffffffff, '016X') + '\n') #Power 
+    if out_type == 'int' or out_type == 'both':
+        out_name = out_path+'_int.txt'
+
+        if not(os.path.exists(out_name)):
+        #set up headers if file doesn't already exist
+            with open(out_name, 'a') as output:
+                output.write('FBin' + '\t') #bin number
+                output.write('Power' + '\n') #FFT Power 
+
+        with open(out_name, 'a') as output:
+            for x in out_array:
+                output.write(str(np.uint16(x[0])) + '\t') #bin number
+                output.write(str(np.uint64(x[1])) + '\n') #FFT power 
+    return
+
+
+def save_spectra(out_array, out_path, out_type):
+
+    #save data
+    if out_type =='hex' or out_type =='both':
+        out_name = out_path+'_hex.txt'
+
+        if not(os.path.exists(out_name)):
+        #set up headers if file doesn't already exist
+            with open(out_name, 'a') as output:
+                output.write('SBin' + '\t') #bin number
+                output.write('Comp' + '\t') #Compressed result 
+                output.write('Uncomp' + '\n') #Uncompressed result
+        
+        with open(out_name, 'a') as output:
+            for x in out_array:
+                output.write(format(np.uint16(x[0]) & 0xffff, '04X') + '\t') #bin number
+                output.write(format(np.uint32(x[1]) & 0xffffffff, '08X') + '\t') #FFTr 
+                output.write(format(np.uint64(x[2]) & 0xffffffffffffffff, '016X') + '\n') #FFTi 
+    if out_type == 'int' or out_type == 'both':
+        out_name = out_path+'_int.txt'
+
+        if not(os.path.exists(out_name)):
+        #set up headers if file doesn't already exist
+            with open(out_name, 'a') as output:
+                output.write('SBin' + '\t') #Bin number
+                output.write('Comp' + '\t') #Compressed result 
+                output.write('Uncomp' + '\n') #Uncompressed result 
+
+        with open(out_name, 'a') as output:
+            for x in out_array:
+                output.write(str(np.uint16(x[0])) + '\t') #Bin number
+                output.write(str(np.uint32(x[1])) + '\t') #Compressed result
+                output.write(str(np.uint64(x[2])) + '\n') #Uncompressed result 
+    return
+
 
 def saveascsv(fname, adds, outputfolder='output'):
     import csv
