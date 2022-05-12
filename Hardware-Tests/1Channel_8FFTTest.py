@@ -8,25 +8,18 @@ import serial #import serial library
 import time
 import numpy as np
 from numpy import random
+#custom function imports
 from saveas import save_output_txt
 from serialfcns import readFPGA, ser_write, response_check
 from inputstimulus import test_signal
+from readFPGA import read_FPGA_input
 
-from readFPGA import read_FPGA_input, read_INT_input, quick_compare, flatten, twos_complement
-from readFPGA import read_FPGA_fft_debug, read_FPGA_input_lines
-
-
-MAX_VALUE_OF_16_BIT_INT = 2 ** (16 - 1) - 1 # max for two's complement integer
-MIN_VALUE_OF_16_BIT_INT = -1 * (2 ** (16 - 1)) # most negative for two's complement integer 
-
-# some set up parameters
+# some set up parameters - used in signal generation
 fs = 131072.                # sampling freq. in Hz
 signal_freq0 = 60000         # signal freq. 1 in Hz
 amp0 = 2**15-1                # amplitudes (in ADC units)
 shift0 = 0                  # phase shift in radians
 sample_len = 0.5             # seconds
-nFFT = 1024                 # length of FFT
-n_acc = 8                   # number of FFTs to accummulate
 
 #misc PIC commands
 ack = b'\x06\x0A'
@@ -76,7 +69,6 @@ num_samples = len(channels0_td)
 print(num_samples)
 #num_samples = 11
 test = channels0_td[0:num_samples]
-
 #test = [i for i in range(num_samples)]
 
 #initialize serial ports
@@ -103,12 +95,12 @@ print('FPGA Configured')
 to_Send = num_samples.to_bytes(4,'big',signed=False)
 ser_write(pic_ser,SetLength+to_Send+lf)
 
-
 #Wait for acknowledge
 response_check(pic_ser,ack)
 print('Data Length Set')
-t0=time.perf_counter()
+
 #buffer data
+t0=time.perf_counter()
 var = 0
 for i in test:
     val = i.to_bytes(2,byteorder='big',signed=True)
@@ -137,8 +129,6 @@ FPGA_rev = "Rev14p1_"
 
 
 vals,bits = readFPGA(FPGA_ser,readcon="none",num_read=8,outpath=out_folder+'/FPGA-' + FPGA_rev + f)
-#vals1,bits1 = readFPGA(FPGA_ser,readAllcon = True)
-
 
 if testmode == ADC_And_Rotation:
     adc3r = vals[:,0]
@@ -164,17 +154,13 @@ elif testmode == FFT_Results:
 
     out_path = out_folder+'/FPGA-'+FPGA_rev+'_FFT'+f
 
-    #save_output_txt(bin,out_path+'bin','both',bits)
-    #save_output_txt(im,out_path+'img','both',bits)
-    #save_output_txt(re,out_path+'real','both',bits)
+
 elif testmode == FFT_Power:
     bin = vals[:,0]
     pwr = vals[:,1]
 
     out_path = out_folder+'/FPGA-'+FPGA_rev+'_FFT_PWR'+f
 
-    #save_output_txt(bin,out_path+'bin','both',bits)
-    #save_output_txt(pwr,out_path+'pwr','both',bits)
 elif testmode == Specta_Results:
     bin = vals[:,0] 
     comp_rst= vals[:,1] 
@@ -182,9 +168,6 @@ elif testmode == Specta_Results:
 
     out_path = out_folder+'/FPGA-'+FPGA_rev+'_Spectra_Result'+f
 
-    #save_output_txt(bin,out_path+'bin','both',bits)
-    #save_output_txt(comp_rst,out_path+'compressed_result','both',bits)
-    #save_output_txt(uncomp_rst,out_path+'uncompressed_result','both',bits)
 
 
 '''all1 = vals[:,0]
