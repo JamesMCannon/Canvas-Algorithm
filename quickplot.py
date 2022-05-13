@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 show_plots = False
 
 file_path = "./Data_compare/"
-f = "60khz"
+f = "512hz"
 fpga_rev = "Rev14p1"
 amp = "hi_amp_"
 
@@ -119,16 +119,18 @@ print(f+' FPGA power offset from pyFPGA:\n', FPGA_pyFPGApwr_compare)
 
 fpga_file_res = FPGA_base+'_rebin_hex.txt'
 fpga_comp,fpga_uncomp = read_FPGA_input_lines(fpga_file_res,64,line_n=3,x=1,y=2,signed=False)
+fpga_uncomp = np.array(fpga_uncomp,dtype=np.int64)
+fpga_comp = np.array(fpga_comp,dtype=np.int32)
 
 pypy_file_rebin = pypy_base+'_avg_hex.txt'
 pypy_file_comp = pypy_base+'_cmprs_hex.txt'
-pypy_uncomp =  np.array(read_FPGA_input(pypy_file_rebin,64,False,show_plots=False),dtype=np.uint64)
-pypy_comp =  np.array(read_FPGA_input(pypy_file_comp,16,False,show_plots=False),dtype=np.uint16)
+pypy_uncomp =  np.array(read_FPGA_input(pypy_file_rebin,64,False,show_plots=False),dtype=np.int64)
+pypy_comp =  np.array(read_FPGA_input(pypy_file_comp,16,False,show_plots=False),dtype=np.int32)
 
 pyFPGA_file_rebin = pyFPGA_base+'_avg_hex.txt'
 pyFPGA_file_comp = pyFPGA_base+'_cmprs_hex.txt'
-pyFPGA_uncomp =  np.array(read_FPGA_input(pyFPGA_file_rebin,64,False,show_plots=False),dtype=np.uint64)
-pyFPGA_comp =  np.array(read_FPGA_input(pyFPGA_file_comp,16,False,show_plots=False),dtype=np.uint16)
+pyFPGA_uncomp =  np.array(read_FPGA_input(pyFPGA_file_rebin,64,False,show_plots=False),dtype=np.int64)
+pyFPGA_comp =  np.array(read_FPGA_input(pyFPGA_file_comp,16,False,show_plots=False),dtype=np.int32)
 
 if f == '60khz':
     center = 56
@@ -138,16 +140,22 @@ elif f == '512hz':
     center = 2
 
 
-FPGA_pypy_uncomp_compare = (pypy_uncomp[center] - fpga_uncomp[center])/pypy_uncomp[center]
-FPGA_pyFPGA_uncomp_compare = (pyFPGA_uncomp[center] - fpga_uncomp[center])/pyFPGA_uncomp[center]
+pypy_uncomp_delta = pypy_uncomp[center] - fpga_uncomp[center]
+pyFPGA_uncomp_delta = pyFPGA_uncomp[center] - fpga_uncomp[center]
 
-FPGA_pypy_comp_compare = (pypy_comp[center] - fpga_comp[center])/pypy_comp[center]
-FPGA_pyFPGA_comp_compare = (pyFPGA_comp[center] - fpga_comp[center])/pyFPGA_comp[center]
+FPGA_pypy_uncomp_compare = (pypy_uncomp_delta)/pypy_uncomp[center]
+FPGA_pyFPGA_uncomp_compare = (pyFPGA_uncomp_delta)/pyFPGA_uncomp[center]
 
-print('pypy uncompressed comparison: ', FPGA_pypy_uncomp_compare)
-print('pypy compressed comparison: ', FPGA_pypy_comp_compare)
+pypy_comp_delta = pypy_comp[center] - fpga_comp[center]
+pyFPGA_comp_delta = pyFPGA_comp[center] - fpga_comp[center]
 
-print('pyFPGA uncompressed comparison: ', FPGA_pyFPGA_uncomp_compare)
-print('pyFPGA compressed comparison: ', FPGA_pyFPGA_comp_compare)
+FPGA_pypy_comp_compare = (pypy_comp_delta )/pypy_comp[center]
+FPGA_pyFPGA_comp_compare = (pyFPGA_comp_delta)/pyFPGA_comp[center]
+
+print('pypy uncompressed comparison: ', FPGA_pypy_uncomp_compare,"\n uncompressed delta: ",pypy_uncomp_delta )
+print('pypy compressed comparison: ', FPGA_pypy_comp_compare,"\n compressed delta: ",pypy_comp_delta)
+
+print('pyFPGA uncompressed comparison: ', FPGA_pyFPGA_uncomp_compare,"\n uncompressed delta: ",pyFPGA_uncomp_delta)
+print('pyFPGA compressed comparison: ', FPGA_pyFPGA_comp_compare,"\n compressed delta: ",pyFPGA_comp_delta)
 
 print("done")
