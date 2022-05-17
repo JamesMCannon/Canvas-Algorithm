@@ -8,7 +8,7 @@ def spec_compress(avg_pwr, channel_num=0, show_plots=False, save_output='both', 
     cmprs_pwr = []
     for iv in avg_pwr:
         if iv == 0:  # if 0, compressed is 0
-            cmprs_pwr.apppend(0)
+            cmprs_pwr.append(0)
         else: # handling around 0.5 is odd, sometimes this will be 1 off
             cmprs = math.log2(iv)*64
             cmprs_pwr.append(round(cmprs))

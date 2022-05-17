@@ -82,6 +82,7 @@ def test_signal(fs, sample_len, freq, amp, shift=0, channel_num=0, show_plots=Fa
     if show_plots:
         plt_chk = int(len(channels_td))
         plt.plot(t_vec[:plt_chk], channels_td[:plt_chk])
+        plt.plot(t_vec[:plt_chk], channels_td_raw[:plt_chk])
         plt.title('Input Signal - first 1024')
         plt.show()
         plt.close()
