@@ -56,16 +56,21 @@ X_Spec_Imaginary_Results = b'\x0F'
 
 #Generate input signal from file or aribitrarily
 fromFile = True
-testmode = FFT_Power
+testmode = Specta_Results
+num = 1
 
 if fromFile:
     inputs = 'Inputs/'
-    f = "60kHz"
-    file = inputs+'hi_amp_'+f+'.txt'  
+    f = "512Hz"
+    amp = "hi_amp_"
+    file = inputs+amp+f+'.txt'  
     channels0_td = read_FPGA_input(file,signed=True,show_plots=False)
 else:
     channels0_td = test_signal(fs, sample_len, signal_freq0, amp0, shift=shift0, channel_num=0, show_plots=False, save_output='both')
-num_samples = len(channels0_td)
+if len(channels0_td) > 20480:
+    num_samples = 20480
+else:
+    num_samples = int(len(channels0_td))
 print(num_samples)
 #num_samples = 11
 test = channels0_td[0:num_samples]
@@ -128,7 +133,7 @@ out_folder = 'HW-output'
 FPGA_rev = "Rev14p1_"
 
 
-vals,bits = readFPGA(FPGA_ser,readcon="none",num_read=8,outpath=out_folder+'/FPGA-' + FPGA_rev + f)
+vals,bits = readFPGA(FPGA_ser,readcon="none",num_read=num,outpath=out_folder+'/FPGA-' + FPGA_rev + amp + f)
 
 if testmode == ADC_And_Rotation:
     adc3r = vals[:,0]

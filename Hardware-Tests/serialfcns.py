@@ -186,7 +186,7 @@ def readSpec(words,ser,outpath):
         vals[i][0] = cur_bin
         vals[i][1] = comp_rst
         vals[i][2] = uncomp_rst
-    save_spectra(vals,outpath + '_rebin',out_type='both')
+    save_spectra(vals,outpath + '_avg',out_type='both')
     return vals
 
 def read12(words, ser):
