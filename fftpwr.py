@@ -74,8 +74,8 @@ def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, chan
         xspec_pwr_i[ind] = r2 * i1 - (r1 * i2)
 
     if show_plots:
-        plt.plot(np.log10(xspec_pwr_r),label='real')
-        plt.plot(np.log10(xspec_pwr_i),label='imag')
+        plt.plot(np.log10(xspec_pwr_r[0]),label='real')
+        plt.plot(np.log10(xspec_pwr_i[0]),label='imag')
         plt.title('xspectra power')
         plt.legend()
         plt.show()
@@ -87,5 +87,7 @@ def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, chan
         out_path = out_folder+'/channel'+str(channel_nums[0])+str(channel_nums[1])+'_xspectra_imag_pwr'
         save_output_txt(xspec_pwr_i, out_path, save_output, 's-64')
 
+    xspec_pwr_r = flatten(xspec_pwr_r)
+    xspec_pwr_i = flatten(xspec_pwr_i)
     return xspec_pwr_r, xspec_pwr_i
 # -------------------------------------------------------------------------------------
