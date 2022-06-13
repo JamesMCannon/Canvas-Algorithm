@@ -88,15 +88,16 @@ test1 = channels1_td[0:num_samples]
 
 #initialize serial ports
 pic_ser = serial.Serial("COM4",115200)
-FPGA_ser = serial.Serial("COM5",512000)
-iterate = 0
+FPGA_ser = serial.Serial("COM5",115200)
+iterate = 1
 while iterate < 2:
     if xspec_test:
         if iterate == 0:
             testmode = X_Spec_Real_Results
             mode = 'xspec_real'
         else: 
-            testmode = X_Spec_Imaginary_Results
+            #testmode = X_Spec_Imaginary_Results
+            testmode = Imaginary_RAM_port_A
             mode = 'xspec_imaginary'
     else:
         iterate+=1
@@ -118,10 +119,6 @@ while iterate < 2:
     response_check(pic_ser,ack)
     print('FPGA Configuration Pins Set')
 
-    #set FPGA to testmode
-    ser_write(FPGA_ser,Sync_Pat+Test_Enable)
-    print('FPGA Set to Test Mode')
-
     #Set number of samples to be buffered
     to_Send = num_samples.to_bytes(4,'big',signed=False)
     ser_write(pic_ser,SetLength+to_Send+lf)
@@ -133,7 +130,7 @@ while iterate < 2:
     #buffer data
     t0=time.perf_counter()
     var = 0
-    for i in range(test0):
+    for i in range(len(test0)):
         val0 = test0[i].to_bytes(2,byteorder='big',signed=True)
         val1 = test1[i].to_bytes(2,byteorder='big',signed=True)
         ser_write(pic_ser,Data + val0 + delim + val1 + lf)
@@ -149,17 +146,19 @@ while iterate < 2:
     del_t = t1-t0
     print('Data buffered after %f seconds', del_t)
 
-    #start
+    #start. This releases the reset pin held by the PIC
     ser_write(pic_ser,StartFPGA+lf)
 
     #Wait for acknowledge
     response_check(pic_ser,ack)
     print('FPGA Started')
 
+    ##set FPGA to testmode
+    #ser_write(FPGA_ser,Sync_Pat+Test_Enable)
+    #print('FPGA Set to Test Mode')
+ 
     out_folder = 'HW-output'
     FPGA_rev = "Rev14p1_"
-
-    
 
     vals,bits = readFPGA(FPGA_ser,readcon="none",num_read=num,outpath=out_folder+'/FPGA-' + FPGA_rev + amp + f + mode)
 
