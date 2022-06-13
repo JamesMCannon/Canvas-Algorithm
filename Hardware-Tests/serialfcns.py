@@ -2,7 +2,7 @@ from tkinter import E
 import serial #import serial library
 import time
 import numpy as np
-from saveas import save_FFT, save_power, save_spectra
+from saveas import save_FFT, save_power, save_spectra, save_xspectra
 
 def response_check(ser,ack,dump_line = True):
     msg_len = len(ack)
@@ -172,13 +172,12 @@ def readPwr(words,ser,outpath): #both with power and accumulated power
     save_power(vals,outpath,out_type='both')
     return vals
 
-
 def readSpec(words,ser,outpath):
     vals = np.zeros((words,3),dtype=np.uint64)
     for i in range(words):
         cur_bin = int.from_bytes(ser.read(2),'big')
         v=ser.read(2)
-        mask = b'\x0f\xff'
+        mask = b'\x0f\xff'#4 bits unused 
         comp_rst = andbytes(v,mask)
         comp_rst = int.from_bytes(comp_rst,'big')
         uncomp_rst = int.from_bytes(ser.read(8),'big')
@@ -187,6 +186,24 @@ def readSpec(words,ser,outpath):
         vals[i][1] = comp_rst
         vals[i][2] = uncomp_rst
     save_spectra(vals,outpath + '_avg',out_type='both')
+    return vals
+
+def readXSpec(words,ser,outpath):
+    vals = np.zeros((words,3),dtype=np.int64)
+    for i in range(words):
+        cur_bin = int.from_bytes(ser.read(2),'big')
+        v=ser.read(2)
+        mask = b'\x0f\xff'#4 bits unused 
+        comp_rst = andbytes(v,mask)
+        comp_rst = int.from_bytes(comp_rst,'big') #uses sign-magnitude not two's compliment
+        if (comp_rst>2048): #2^11 is 2048 so we use this as our comparison 
+            comp_rst = (comp_rst-2048) 
+        uncomp_rst = int.from_bytes(ser.read(8),'big',signed=True) #uses two's compliment
+
+        vals[i][0] = cur_bin
+        vals[i][1] = comp_rst
+        vals[i][2] = uncomp_rst
+    save_xspectra(vals,outpath + '_avg',out_type='both')
     return vals
 
 def read12(words, ser):
