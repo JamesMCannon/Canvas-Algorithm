@@ -173,6 +173,53 @@ def save_xspectra(out_array, out_path, out_type):
     return
 
 
+def saveall(out_array, out_path, out_type):
+    #save data
+    if out_type =='hex' or out_type =='both':
+        out_name = out_path+'_hex.txt'
+
+        if not(os.path.exists(out_name)):
+        #set up headers if file doesn't already exist
+            with open(out_name, 'a') as output:
+                output.write('Bytes 1 & 2' + '\t') 
+                output.write('Bytes 3 & 4' + '\t')  
+                output.write('Bytes 5 & 6' + '\t')  
+                output.write('Bytes 7 & 8' + '\t')  
+                output.write('Bytes 9 &10' + '\t') 
+                output.write('Bytes 11&12' + '\t') 
+        
+        with open(out_name, 'a') as output:
+            for x in out_array:
+                output.write(format(np.uint16(x[0]) & 0xffff, '04X') + '\t')
+                output.write(format(np.uint16(x[1]) & 0xffff, '04X') + '\t') 
+                output.write(format(np.uint16(x[2]) & 0xffff, '04X') + '\t') 
+                output.write(format(np.uint16(x[3]) & 0xffff, '04X') + '\t') 
+                output.write(format(np.uint16(x[4]) & 0xffff, '04X') + '\t')
+                output.write(format(np.uint16(x[5]) & 0xffff, '04X') + '\t') 
+    if out_type == 'int' or out_type == 'both':
+        out_name = out_path+'_int.txt'
+
+        if not(os.path.exists(out_name)):
+        #set up headers if file doesn't already exist
+            with open(out_name, 'a') as output:
+                output.write('Bytes 1 & 2' + '\t') 
+                output.write('Bytes 3 & 4' + '\t')  
+                output.write('Bytes 5 & 6' + '\t')  
+                output.write('Bytes 7 & 8' + '\t')  
+                output.write('Bytes 9 &10' + '\t') 
+                output.write('Bytes 11&12' + '\t') 
+
+        with open(out_name, 'a') as output:
+            for x in out_array:
+                output.write(str(np.uint16(x[0])) + '\t')
+                output.write(str(np.uint16(x[1])) + '\t')
+                output.write(str(np.uint16(x[2])) + '\t')
+                output.write(str(np.uint16(x[3])) + '\t')
+                output.write(str(np.uint16(x[4])) + '\t')
+                output.write(str(np.uint16(x[5])) + '\t')  
+    return
+
+
 def saveascsv(fname, adds, outputfolder='output'):
     import csv
     with open(outputfolder+'/'+fname, 'w', newline='') as file:

@@ -2,7 +2,7 @@ from tkinter import E
 import serial #import serial library
 import time
 import numpy as np
-from saveas import save_FFT, save_power, save_spectra, save_xspectra
+from saveas import save_FFT, save_power, save_spectra, save_xspectra, saveall
 
 def response_check(ser,ack,dump_line = True):
     msg_len = len(ack)
@@ -52,7 +52,12 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
     power_calc = b'\x05'
     acc_power = b'\x06'   
     spec_result = b'\x07'
-
+    if readcon == 'all': #skip everything if Read All is chosen
+        print('Read All')
+        words = 16500
+        readAll(words,ser,outpath='HW-output/read_all')
+        return
+        
     length,test_mode = read_header(ser)
 
     if test_mode==tx_packet_gen:
@@ -220,12 +225,12 @@ def read12(words, ser):
         vals[i][2] = int.from_bytes(v3, 'big',signed=True)
     return vals
 
-def readAll(words,ser): #basic read function, reads in two-byte intervals
+def readAll(words,ser,outpath): #basic read function, reads in two-byte intervals
     s1 = b'\x35'
     s2= b'\x2E'
     s3 = b'\xF8'
     s4 = b'\x53'
-    vals = np.zeros((words,6))
+    vals = np.zeros((words,6),dtype=np.uint16)
     #vals = bytearray()
     for i in range(words):
             if i%1000==0:
@@ -248,27 +253,7 @@ def readAll(words,ser): #basic read function, reads in two-byte intervals
                 v = ser.read(2)
                 vals[i][j] = int.from_bytes(v,'big')
                 
-            '''
-            v1 = ser.read(2)
-            v2 = ser.read(2)
-            v3 = ser.read(2)
-            v4 = ser.read(2)
-            v5 = ser.read(2)
-            
-            vals[i][0] = v0
-            vals[i][1] = v1
-            vals[i][2] = v2
-            vals[i][3] = v3
-            vals[i][4] = v4
-            vals[i][5] = v5
-            
-            vals[i][0] = int.from_bytes(v0,'big')
-            vals[i][1] = int.from_bytes(v1,'big')
-            vals[i][2] = int.from_bytes(v2,'big')
-            vals[i][3] = int.from_bytes(v3,'big')
-            vals[i][4] = int.from_bytes(v4,'big')
-            vals[i][5] = int.from_bytes(v5,'big')
-            '''
+    saveall(vals,outpath + '_avg',out_type='both')
     return vals
 
 

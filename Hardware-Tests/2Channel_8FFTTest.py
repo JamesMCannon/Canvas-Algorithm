@@ -97,7 +97,8 @@ while iterate < 2:
             mode = 'xspec_real'
         else: 
             #testmode = X_Spec_Imaginary_Results
-            testmode = Imaginary_RAM_port_A
+            testmode = Imaginary_RAM_port_A #For testing, change this testmode
+            readcon = 'all' #valid options are 'all' or 'none'. All dumps all data to a file, none proceeds with normal mode
             mode = 'xspec_imaginary'
     else:
         iterate+=1
