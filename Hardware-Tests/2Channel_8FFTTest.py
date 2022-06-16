@@ -97,7 +97,7 @@ while iterate < 2:
             mode = 'xspec_real'
         else: 
             #testmode = X_Spec_Imaginary_Results
-            testmode = Imaginary_RAM_port_A #For testing, change this testmode
+            testmode = Specta_Results #For testing, change this testmode
             readcon = 'all' #valid options are 'all' or 'none'. All dumps all data to a file, none proceeds with normal mode
             mode = 'xspec_imaginary'
     else:
@@ -154,14 +154,14 @@ while iterate < 2:
     response_check(pic_ser,ack)
     print('FPGA Started')
 
-    ##set FPGA to testmode
-    #ser_write(FPGA_ser,Sync_Pat+Test_Enable)
-    #print('FPGA Set to Test Mode')
+    #set FPGA to testmode
+    ser_write(FPGA_ser,Sync_Pat+Test_Enable,False)
+    print('FPGA Set to Test Mode')
  
     out_folder = 'HW-output'
     FPGA_rev = "Rev14p1_"
 
-    vals,bits = readFPGA(FPGA_ser,readcon="none",num_read=num,outpath=out_folder+'/FPGA-' + FPGA_rev + amp + f + mode)
+    vals,bits = readFPGA(FPGA_ser,readcon=readcon,num_read=num,outpath=out_folder+'/FPGA-' + FPGA_rev + amp + f + mode)
 
     v=int(vals[0][0])
     print('First Entry: ',v) #Let's look at the first datum
