@@ -94,7 +94,7 @@ FPGA_ser = serial.Serial("COM4",115200)
 
 
 #main loop
-spec_core = b'\x00'
+spec_core = b'\x01'
 iterate = 1
 while iterate < 2:
     #set test mode
@@ -105,7 +105,7 @@ while iterate < 2:
         else: 
             #testmode = X_Spec_Imaginary_Results
             testmode = Spectra_Results #For testing, change this testmode
-            readcon = 'all' #valid options are 'all' or 'none'. All dumps all data to a file, none proceeds with normal mode
+            readcon = 'none' #valid options are 'all' or 'none'. All dumps all data to a file, none proceeds with normal mode
             mode = 'xspec_imaginary'
     else:
         iterate+=1
@@ -150,13 +150,16 @@ while iterate < 2:
 
     #reset FPGA
     ser_write(FPGA_ser,Sync_Pat+SW_Reset,False)
+    time.sleep(2.5)
 
     #configure FPGA
     ser_write(FPGA_ser,Sync_Pat+Config+spec_core+testmode,False)
+    time.sleep(2.5)
 
     #Start FPGA
     ser_write(FPGA_ser,Sync_Pat+Test_Enable,False)
     print('FPGA Started')
+    #time.sleep(2.5)
  
     out_folder = 'HW-output'
     FPGA_rev = "Rev14p1_"
