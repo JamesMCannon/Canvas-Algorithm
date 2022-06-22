@@ -49,9 +49,10 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
     tx_packet_gen = b'\x02'
     rotation = b'\x03'
     fft_result = b'\x04'
-    power_calc = b'\x05'
-    acc_power = b'\x06'   
+    power_calc = b'\x05' 
     spec_result = b'\x07'
+    X_Spec_Real_Results = b'\x0C'
+    X_Spec_Imaginary_Results = b'\x0F'
     if readcon == 'all': #skip everything if Read All is chosen
         print('Read All')
         words = 16500
@@ -80,16 +81,19 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
         word_length = 12 #bytes
         bits = 'u-64'
         bins = True #do the first 2 bytes of payload word denote sample/bin #?
-    elif test_mode == acc_power:
-        print("Accumulated Power")
-        word_length = 12 #bytes
-        bits = 'u-64'
-        bins = True #do the first 2 bytes of payload word denote sample/bin #?
     elif test_mode == spec_result:
         print("Spectral Result")
         word_length = 12 #bytes
         bits = 'u-64'
         bins = True #do the first 2 bytes of payload word denote sample/bin #?
+    elif test_mode == X_Spec_Real_Results:
+        print("Real Cross-Spectral Result")
+        word_length = 12 #bytes
+        bits = 'u-64'
+    elif test_mode == X_Spec_Imaginary_Results:
+        print("Imaginary Cross-Spectral Result")
+        word_length = 12 #bytes
+        bits = 'u-64'
     elif readcon == 'all':
         print("new test mode, read all")
         word_length = 12 #dummy, gets over written in 91
@@ -122,11 +126,14 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
         elif test_mode == power_calc:
             name = outpath + '_spectra' 
             vals = readPwr(words,ser,name)
-        elif test_mode == acc_power:
-            name = outpath + '_acc' #doesn't exist in 14p0 
-            vals = readPwr(words,ser,name)
         elif test_mode == spec_result:
             vals = readSpec(words,ser,outpath)
+        elif test_mode == X_Spec_Real_Results:
+            name = outpath + '_xpec_re'
+            vals = readXSpec(words,ser,name)
+        elif test_mode == X_Spec_Imaginary_Results:
+            name = outpath + '_xpec_im'
+            vals = readXSpec(words,ser,name)
         else:
             raise Exception("Unexpected Test Mode")
 
