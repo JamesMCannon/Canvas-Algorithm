@@ -47,7 +47,7 @@ Ch_0_Pkt_Gen = b'\x02'
 ADC_And_Rotation = b'\x03'
 FFT_Results = b'\x04'
 FFT_Power = b'\x05'
-Specta_Results = b'\x07'
+Spectra_Results = b'\x07'
 Power_RAM_port_A = b'\x08'
 Power_RAM_port_B = b'\x09'
 Real_RAM_port_A = b'\x0A'
@@ -104,12 +104,12 @@ while iterate < 2:
             mode = 'xspec_real'
         else: 
             #testmode = X_Spec_Imaginary_Results
-            testmode = Specta_Results #For testing, change this testmode
+            testmode = Spectra_Results #For testing, change this testmode
             readcon = 'all' #valid options are 'all' or 'none'. All dumps all data to a file, none proceeds with normal mode
             mode = 'xspec_imaginary'
     else:
         iterate+=1
-        testmode = Specta_Results
+        testmode = Spectra_Results
         mode = ''
 
     #reset PIC
