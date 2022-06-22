@@ -55,9 +55,9 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
     X_Spec_Imaginary_Results = b'\x0F'
     if readcon == 'all': #skip everything if Read All is chosen
         print('Read All')
-        words = 16500
-        readAll(words,ser,outpath='HW-output/read_all')
-        return
+        words = 10 #change number of 12byte words read
+        vals = readAll(words,ser,outpath='HW-output/read_all')
+        return vals,'uint16'
         
     length,test_mode = read_header(ser)
 

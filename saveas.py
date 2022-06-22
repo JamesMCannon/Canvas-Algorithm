@@ -186,7 +186,7 @@ def saveall(out_array, out_path, out_type):
                 output.write('Bytes 5 & 6' + '\t')  
                 output.write('Bytes 7 & 8' + '\t')  
                 output.write('Bytes 9 &10' + '\t') 
-                output.write('Bytes 11&12' + '\t') 
+                output.write('Bytes 11&12' + '\n') 
         
         with open(out_name, 'a') as output:
             for x in out_array:
@@ -195,7 +195,7 @@ def saveall(out_array, out_path, out_type):
                 output.write(format(np.uint16(x[2]) & 0xffff, '04X') + '\t') 
                 output.write(format(np.uint16(x[3]) & 0xffff, '04X') + '\t') 
                 output.write(format(np.uint16(x[4]) & 0xffff, '04X') + '\t')
-                output.write(format(np.uint16(x[5]) & 0xffff, '04X') + '\t') 
+                output.write(format(np.uint16(x[5]) & 0xffff, '04X') + '\n') 
     if out_type == 'int' or out_type == 'both':
         out_name = out_path+'_int.txt'
 
@@ -207,7 +207,7 @@ def saveall(out_array, out_path, out_type):
                 output.write('Bytes 5 & 6' + '\t')  
                 output.write('Bytes 7 & 8' + '\t')  
                 output.write('Bytes 9 &10' + '\t') 
-                output.write('Bytes 11&12' + '\t') 
+                output.write('Bytes 11&12' + '\n') 
 
         with open(out_name, 'a') as output:
             for x in out_array:
@@ -216,7 +216,7 @@ def saveall(out_array, out_path, out_type):
                 output.write(str(np.uint16(x[2])) + '\t')
                 output.write(str(np.uint16(x[3])) + '\t')
                 output.write(str(np.uint16(x[4])) + '\t')
-                output.write(str(np.uint16(x[5])) + '\t')  
+                output.write(str(np.uint16(x[5])) + '\n')  
     return
 
 
