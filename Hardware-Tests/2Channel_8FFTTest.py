@@ -47,7 +47,7 @@ Ch_0_Pkt_Gen = b'\x02'
 ADC_And_Rotation = b'\x03'
 FFT_Results = b'\x04'
 FFT_Power = b'\x05'
-Specta_Results = b'\x07'
+Spectra_Results = b'\x07'
 Power_RAM_port_A = b'\x08'
 Power_RAM_port_B = b'\x09'
 Real_RAM_port_A = b'\x0A'
@@ -60,10 +60,12 @@ X_Spec_Imaginary_Results = b'\x0F'
 #GSE Commands to FPGA
 Sync_Pat = b'\x1A\xCF\xFC\x1D'
 Test_Enable = b'\x7E\x57\xBA\x11'
+SW_Reset = b'\x7E\x57\xDE\xAD'
+Config = b'\x7E\x57\xCF\x16'
+
 
 #Generate input signal from file or aribitrarily
 fromFile = True
-
 num = 1
 
 if fromFile:
@@ -87,23 +89,29 @@ test0 = channels0_td[0:num_samples]
 test1 = channels1_td[0:num_samples]
 
 #initialize serial ports
-pic_ser = serial.Serial("COM4",115200)
-FPGA_ser = serial.Serial("COM5",115200)
+pic_ser = serial.Serial("COM5",115200)
+FPGA_ser = serial.Serial("COM4",115200)
+
+
+#main loop
+spec_core = b'\x01'
 iterate = 1
 while iterate < 2:
+    #set test mode
     if xspec_test:
         if iterate == 0:
             testmode = X_Spec_Real_Results
             mode = 'xspec_real'
         else: 
             #testmode = X_Spec_Imaginary_Results
-            testmode = Specta_Results #For testing, change this testmode
-            readcon = 'all' #valid options are 'all' or 'none'. All dumps all data to a file, none proceeds with normal mode
+            testmode = Spectra_Results #For testing, change this testmode
+            readcon = 'none' #valid options are 'all' or 'none'. All dumps all data to a file, none proceeds with normal mode
             mode = 'xspec_imaginary'
     else:
         iterate+=1
-        testmode = Specta_Results
+        testmode = Spectra_Results
         mode = ''
+
     #reset PIC
     time.sleep(0.5)
     ser_write(pic_ser,ResetPIC+lf,True)
@@ -112,13 +120,6 @@ while iterate < 2:
     #print('Reset Received')
     response_check(pic_ser,initiated)
     print('PIC Reset')
-
-    #configure PIC
-    ser_write(pic_ser,SetConfig+testmode+lf)
-
-    #Wait for acknowledge
-    response_check(pic_ser,ack)
-    print('FPGA Configuration Pins Set')
 
     #Set number of samples to be buffered
     to_Send = num_samples.to_bytes(4,'big',signed=False)
@@ -147,16 +148,18 @@ while iterate < 2:
     del_t = t1-t0
     print('Data buffered after %f seconds', del_t)
 
-    #start. This releases the reset pin held by the PIC
-    ser_write(pic_ser,StartFPGA+lf)
+    #reset FPGA
+    ser_write(FPGA_ser,Sync_Pat+SW_Reset,False)
+    time.sleep(2.5)
 
-    #Wait for acknowledge
-    response_check(pic_ser,ack)
-    print('FPGA Started')
+    #configure FPGA
+    ser_write(FPGA_ser,Sync_Pat+Config+spec_core+testmode,False)
+    time.sleep(2.5)
 
-    #set FPGA to testmode
+    #Start FPGA
     ser_write(FPGA_ser,Sync_Pat+Test_Enable,False)
-    print('FPGA Set to Test Mode')
+    print('FPGA Started')
+    #time.sleep(2.5)
  
     out_folder = 'HW-output'
     FPGA_rev = "Rev14p1_"
