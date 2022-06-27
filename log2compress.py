@@ -21,7 +21,7 @@ def spec_compress(avg_pwr, channel_num=0, show_plots=False, save_output='both', 
 # ------------------------------------------------------------------------------------
 
 # ------------------------- log2 compression ------------------------------------
-def xspec_compress(avg_pwr, channel_num=0, show_plots=False, save_output='both', out_folder='output'):
+def xspec_compress(avg_pwr, coefficient="r", show_plots=False, save_output='both', out_folder='output'):
     cmprs_pwr = []
     for iv in avg_pwr:
         if iv == 0:  # if 0, compressed is 0
@@ -45,11 +45,13 @@ def xspec_compress(avg_pwr, channel_num=0, show_plots=False, save_output='both',
             # convert back!
             ov = int(ov, 2)
             cmprs_pwr.append(ov)
-        else:
+        elif iv>0:
             cmprs_pwr.append(round(math.log2(iv)*32))
+        else:
+            print("Invalid value: ", iv)
 
     if save_output:
-        out_path = out_folder+'/channel'+str(channel_num)+'_cmprs'
+        out_path = out_folder+'/channel_'+coefficient+'_cmprs'
         save_output_txt(cmprs_pwr, out_path, save_output, 'u-16') # shouldnt be 64 anymore....
 
     return cmprs_pwr

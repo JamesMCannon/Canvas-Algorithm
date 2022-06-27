@@ -74,7 +74,7 @@ def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, chan
         xspec_pwr_i[ind] = r2 * i1 - (r1 * i2)
 
     if show_plots:
-        plt.plot(np.log10(xspec_pwr_r[0]),label='real')
+        plt.plot(np.log10(xspec_pwr_r[0]),label='real') #doesn't handle negative coefficients well
         plt.plot(np.log10(xspec_pwr_i[0]),label='imag')
         plt.title('xspectra power')
         plt.legend()
