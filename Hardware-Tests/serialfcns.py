@@ -67,27 +67,23 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
         print("tx_packet_gen")
         word_length = 4 #bytes
         bits  = 'u-16'
-        bins = False #do the first 2 bytes of payload word denote sample/bin #?
     elif test_mode == rotation:
         print("rotation")
         word_length = 12 #bytes
         bits = 's-16'
-        bins = True #do the first 2 bytes of payload word denote sample/bin #?
+
     elif test_mode == fft_result:
         print("FFT Result")
         word_length = 12 #bytes
         bits = 's-32'
-        bins = True #do the first 2 bytes of payload word denote sample/bin #?
     elif test_mode == power_calc:
         print("Power Calculation")
         word_length = 12 #bytes
         bits = 'u-64'
-        bins = True #do the first 2 bytes of payload word denote sample/bin #?
     elif test_mode == spec_result:
         print("Spectral Result")
         word_length = 12 #bytes
         bits = 'u-64'
-        bins = True #do the first 2 bytes of payload word denote sample/bin #?
     elif test_mode == X_Spec_Real_Results:
         print("Real Cross-Spectral Result")
         word_length = 12 #bytes
