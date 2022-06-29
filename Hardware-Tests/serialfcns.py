@@ -2,7 +2,7 @@ from tkinter import E
 import serial #import serial library
 import time
 import numpy as np
-from saveas import save_FFT, save_power, save_spectra, save_xspectra, saveall
+from saveas import save_FFT, save_power, save_spectra, save_xspectra, saveall, save_rotate, save_IF
 
 def response_check(ser,ack,dump_line = True):
     msg_len = len(ack)
@@ -29,7 +29,8 @@ def ser_write(ser, command, len_header = True):
 
 def read_header(ser):
     #define sycn bytes
-    sync = b'\x35\x2E\xF8\x53'
+    #sync = b'\x35\x2E\xF8\x53'
+    sync = b'\x1A\xCF\xFC\x1D'
 
     #Synchronize with expected packet
     response_check(ser,sync,dump_line=False)
@@ -49,7 +50,8 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
     tx_packet_gen = b'\x02'
     rotation = b'\x03'
     fft_result = b'\x04'
-    power_calc = b'\x05' 
+    power_calc = b'\x05'
+    spec_to_x_spec = b'\x06' 
     spec_result = b'\x07'
     X_Spec_Real_Results = b'\x0C'
     X_Spec_Imaginary_Results = b'\x0F'
@@ -94,6 +96,10 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
         print("Imaginary Cross-Spectral Result")
         word_length = 12 #bytes
         bits = 'u-64'
+    elif test_mode == spec_to_x_spec:
+        print("SPEC to X-SPEC I/F")
+        word_length=12 #bytes
+        bits = 'u-64'
     elif readcon == 'all':
         print("new test mode, read all")
         word_length = 12 #dummy, gets over written in 91
@@ -120,7 +126,7 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
         elif test_mode==tx_packet_gen:
             raise Exception("Packet Gen not yet supported")
         elif test_mode == rotation:
-            vals = readRotate(words,ser)
+            vals = readRotate(words,ser,outpath)
         elif test_mode == fft_result:
             vals = readFFT(words,ser,outpath)
         elif test_mode == power_calc:
@@ -134,12 +140,48 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
         elif test_mode == X_Spec_Imaginary_Results:
             name = outpath + '_xpec_im'
             vals = readXSpec(words,ser,name)
+        elif test_mode == spec_to_x_spec:
+            name = outpath+ 'spec_to_xspec_IF'
+            vals = readIF(words,ser,name)
         else:
             raise Exception("Unexpected Test Mode")
 
     return vals,bits
 
-def readRotate(words,ser):
+
+def readIF(words, ser, outpath):
+    vals = np.zeros((words,6))
+    Last_mask = b'\x40'
+    End_mask = b'\x20'
+    Start_mask = b'\x10'
+    for i in range(words):
+        Last = 0 
+        End = 0 
+        Start = 0
+
+        BinID = int.from_bytes(ser.read(2),'big',signed=False)
+        boolopts = ser.read(1)
+        dump = ser.read(1)
+        rFFT = int.from_bytes(ser.read(4),'big',signed=True)
+        iFFT = int.from_bytes(ser.read(4),'big',signed=True)
+
+        if bytes([boolopts[0] & Last_mask[0]]) == Last_mask:
+            Last = 1
+        if bytes([boolopts[0] & End_mask[0]])== End_mask:
+            End = 1
+        if bytes([boolopts[0] & Start_mask[0]]) == Start_mask:
+            Start = 1
+        
+        vals[i][0] = BinID
+        vals[i][1] = Last
+        vals[i][2] = End
+        vals[i][3] = Start
+        vals[i][4] = rFFT
+        vals[i][5] = iFFT
+    save_IF(vals,outpath,'both')
+    return vals
+
+def readRotate(words,ser,outpath):
     vals = np.zeros((words,6))
     for i in range(words):
         adc3_r = int.from_bytes(ser.read(2), 'big')
@@ -155,6 +197,7 @@ def readRotate(words,ser):
         vals[i][3] = adc3
         vals[i][4] = adc2
         vals[i][5] = adc1
+    save_rotate(vals,outpath+'ADCLoopback','both')
     return vals
 
 

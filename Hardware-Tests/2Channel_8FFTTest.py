@@ -1,3 +1,4 @@
+from doctest import testmod
 from encodings import utf_8
 from multiprocessing.connection import wait
 import os
@@ -47,6 +48,7 @@ Ch_0_Pkt_Gen = b'\x02'
 ADC_And_Rotation = b'\x03'
 FFT_Results = b'\x04'
 FFT_Power = b'\x05'
+Spec_to_X_Spec_IF = b'\x06'
 Spectra_Results = b'\x07'
 Power_RAM_port_A = b'\x08'
 Power_RAM_port_B = b'\x09'
@@ -70,10 +72,12 @@ num = 1
 
 if fromFile:
     inputs = 'Inputs/'
-    f = "512Hz"
-    amp = "hi_amp_"
-    file0 = inputs+amp+f+'.txt'
-    file1 = file0   
+    
+    amp = "high-high_"
+    phase = "35deg"
+    f = "_10khz"
+    file0 = inputs+amp+"0deg"+f+'.txt'
+    file1 = inputs+amp+phase+f+'.txt' 
     channels0_td = read_FPGA_input(file0,signed=True,show_plots=False)
     channels1_td = read_FPGA_input(file1,signed=True,show_plots=False)
 else:
@@ -94,7 +98,7 @@ FPGA_ser = serial.Serial("COM4",115200)
 
 
 #main loop
-spec_core = b'\x01'
+spec_core = b'\x00'
 iterate = 1
 while iterate < 2:
     #set test mode
@@ -104,13 +108,17 @@ while iterate < 2:
             mode = 'xspec_real'
         else: 
             #testmode = X_Spec_Imaginary_Results
-            testmode = Spectra_Results #For testing, change this testmode
+            testmode = X_Spec_Imaginary_Results #For testing, change this testmode
             readcon = 'none' #valid options are 'all' or 'none'. All dumps all data to a file, none proceeds with normal mode
             mode = 'xspec_imaginary'
     else:
         iterate+=1
         testmode = Spectra_Results
         mode = ''
+
+    #reset FPGA
+    ser_write(FPGA_ser,Sync_Pat+SW_Reset,False)
+    print('FPGA Reset')
 
     #reset PIC
     time.sleep(0.5)
@@ -148,13 +156,11 @@ while iterate < 2:
     del_t = t1-t0
     print('Data buffered after %f seconds', del_t)
 
-    #reset FPGA
-    ser_write(FPGA_ser,Sync_Pat+SW_Reset,False)
-    time.sleep(2.5)
 
+    #testmode = Spec_to_X_Spec_IF
     #configure FPGA
     ser_write(FPGA_ser,Sync_Pat+Config+spec_core+testmode,False)
-    time.sleep(2.5)
+    #time.sleep(2.5)
 
     #Start FPGA
     ser_write(FPGA_ser,Sync_Pat+Test_Enable,False)
