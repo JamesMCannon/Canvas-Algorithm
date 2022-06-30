@@ -170,7 +170,7 @@ while iterate < 2:
     out_folder = 'HW-output'
     FPGA_rev = "Rev14p1_"
 
-    vals,bits = readFPGA(FPGA_ser,readcon=readcon,num_read=num,outpath=out_folder+'/FPGA-' + FPGA_rev + amp + f + mode)
+    vals = readFPGA(FPGA_ser,readcon=readcon,num_read=num,outpath=out_folder+'/FPGA-' + FPGA_rev + amp + f + mode)
 
     v=int(vals[0][0])
     print('First Entry: ',v) #Let's look at the first datum

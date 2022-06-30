@@ -55,94 +55,57 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
     spec_result = b'\x07'
     X_Spec_Real_Results = b'\x0C'
     X_Spec_Imaginary_Results = b'\x0F'
+
+    default_words = 10
+
     if readcon == 'all': #skip everything if Read All is chosen
         print('Read All')
-        words = 10 #change number of 12byte words read
+        words = default_words #change number of 12byte words read
         vals = readAll(words,ser,outpath='HW-output/read_all')
-        return vals,'uint16'
+        return vals
         
     length,test_mode = read_header(ser)
+    word_length = 12 #bytes
 
     if test_mode==tx_packet_gen:
         print("tx_packet_gen")
         word_length = 4 #bytes
-        bits  = 'u-16'
-    elif test_mode == rotation:
-        print("rotation")
-        word_length = 12 #bytes
-        bits = 's-16'
-
-    elif test_mode == fft_result:
-        print("FFT Result")
-        word_length = 12 #bytes
-        bits = 's-32'
-    elif test_mode == power_calc:
-        print("Power Calculation")
-        word_length = 12 #bytes
-        bits = 'u-64'
-    elif test_mode == spec_result:
-        print("Spectral Result")
-        word_length = 12 #bytes
-        bits = 'u-64'
-    elif test_mode == X_Spec_Real_Results:
-        print("Real Cross-Spectral Result")
-        word_length = 12 #bytes
-        bits = 'u-64'
-    elif test_mode == X_Spec_Imaginary_Results:
-        print("Imaginary Cross-Spectral Result")
-        word_length = 12 #bytes
-        bits = 'u-64'
-    elif test_mode == spec_to_x_spec:
-        print("SPEC to X-SPEC I/F")
-        word_length=12 #bytes
-        bits = 'u-64'
-    elif readcon == 'all':
-        print("new test mode, read all")
-        word_length = 12 #dummy, gets over written in 91
-    elif readcon == '12':
-        print("new test mode, reading 12 byte words")
-        word_length = 12 #dummy, gets over written in 91
-    else:
-        print("Unexpected Test Mode - Forcing ReadAll")
-        word_length = 12
-        readcon = 'all'
-        #raise Exception("Unexpected Test Mode")
 
     words = int(length/word_length)
     for i in range(num_read):
     #read in payload 
-        if readcon == 'all':
-            words=16500
-            vals = readAll(words,ser)
-            bits = 'u-16'
-        elif readcon == '12':
-            words=16500
-            vals = read12(words,ser)
-            bits = 's-32'
-        elif test_mode==tx_packet_gen:
+        if test_mode==tx_packet_gen:
             raise Exception("Packet Gen not yet supported")
         elif test_mode == rotation:
+            print("rotation")
             vals = readRotate(words,ser,outpath)
         elif test_mode == fft_result:
+            print("FFT Result")
             vals = readFFT(words,ser,outpath)
         elif test_mode == power_calc:
+            print("Power Calculation")
             name = outpath + '_spectra' 
             vals = readPwr(words,ser,name)
         elif test_mode == spec_result:
+            print("Spectral Result")
             vals = readSpec(words,ser,outpath)
         elif test_mode == X_Spec_Real_Results:
+            print("Real Cross-Spectral Result")
             name = outpath + '_xpec_re'
             vals = readXSpec(words,ser,name)
         elif test_mode == X_Spec_Imaginary_Results:
+            print("Imaginary Cross-Spectral Result")
             name = outpath + '_xpec_im'
             vals = readXSpec(words,ser,name)
         elif test_mode == spec_to_x_spec:
+            print("SPEC to X-SPEC I/F")
             name = outpath+ 'spec_to_xspec_IF'
             vals = readIF(words,ser,name)
         else:
-            raise Exception("Unexpected Test Mode")
-
-    return vals,bits
+            print("Unexpected Test Mode - Forcing ReadAll")
+            words=default_words
+            vals = readAll(words,ser,outpath='HW-output/read_all')
+    return vals
 
 
 def readIF(words, ser, outpath):
@@ -255,20 +218,6 @@ def readXSpec(words,ser,outpath):
         vals[i][1] = comp_rst
         vals[i][2] = uncomp_rst
     save_xspectra(vals,outpath + '_avg',out_type='both')
-    return vals
-
-def read12(words, ser):
-    vals  = np.zeros((words,3),dtype=np.uint32)
-    for i in range(words):
-        if i%1000==0:
-            print("reading vals ", i)
-        v1 = ser.read(4)
-        v2 = ser.read(4)
-        v3 = ser.read(4)
-
-        vals[i][0] = int.from_bytes(v1, 'big',signed=True)
-        vals[i][1] = int.from_bytes(v2, 'big',signed=True)
-        vals[i][2] = int.from_bytes(v3, 'big',signed=True)
     return vals
 
 def readAll(words,ser,outpath): #basic read function, reads in two-byte intervals
