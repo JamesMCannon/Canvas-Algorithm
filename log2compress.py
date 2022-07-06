@@ -25,7 +25,7 @@ def xspec_compress(avg_pwr, coefficient="r", show_plots=False, save_output='both
     cmprs_pwr = []
     for iv in avg_pwr:
         if iv == 0:  # if 0, compressed is 0
-            cmprs_pwr.apppend(0)
+            cmprs_pwr.append(0)
         elif iv < 0: 
             iv = np.abs(iv)
             ov = round(math.log2(iv)*32)
