@@ -2,7 +2,7 @@ from tkinter import E
 import serial #import serial library
 import time
 import numpy as np
-from saveas import save_FFT, save_power, save_spectra, save_xspectra, saveall, save_rotate, save_IF
+from saveas import save_FFT, save_power, save_spectra, save_xspectra, saveall, save_rotate, save_IF, save_ram
 
 def response_check(ser,ack,dump_line = True):
     msg_len = len(ack)
@@ -55,6 +55,10 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
     spec_result = b'\x07'
     X_Spec_Real_Results = b'\x0C'
     X_Spec_Imaginary_Results = b'\x0F'
+    Real_RAM_port_A = b'\x0A'
+    Real_RAM_port_B = b'\x0B'
+    Imaginary_RAM_port_A = b'\x0D'
+    Imaginary_RAM_port_B = b'\x0E'
 
     default_words = 10
 
@@ -97,6 +101,22 @@ def readFPGA(ser, num_read = 1, readcon = 'none', outpath = 'HW-output/default-f
             print("Imaginary Cross-Spectral Result")
             name = outpath + '_xpec_im'
             vals = readXSpec(words,ser,name)
+        elif test_mode == Real_RAM_port_A:
+            print("Real Ram Port A")
+            name = outpath + '_re_RAM_A'
+            vals = readRAM(words,ser,name)
+        elif test_mode == Real_RAM_port_B:
+            print("Real Ram Port B")
+            name = outpath + '_re_RAM_B'
+            vals = readRAM(words,ser,name)
+        elif test_mode == Imaginary_RAM_port_A:
+            print("Imaginary Ram Port A")
+            name = outpath + '_im_RAM_A'
+            vals = readRAM(words,ser,name)
+        elif test_mode == Imaginary_RAM_port_B:
+            print("Imaginary Ram Port B")
+            name = outpath + '_im_RAM_B'
+            vals = readRAM(words,ser,name)
         elif test_mode == spec_to_x_spec:
             print("SPEC to X-SPEC I/F")
             name = outpath+ 'spec_to_xspec_IF'
@@ -138,6 +158,27 @@ def readIF(words, ser, outpath):
         vals[i][4] = rFFT
         vals[i][5] = iFFT
     save_IF(vals,outpath,'both')
+    return vals
+
+
+
+def readRAM(words, ser, outpath):
+    vals = np.zeros((words,3))
+    
+    address_mask = b'\x03\xFF'
+    
+    for i in range(words):
+        OpCode = int.from_bytes(ser.read(1), 'big', signed=False)
+        options = ser.read(2)
+        dump = ser.read(1)
+        Data = int.from_bytes(ser.read(8),'big',signed=False)
+
+        Address = andbytes(options,address_mask)
+        
+        vals[i][0] = OpCode
+        vals[i][1] = int.from_bytes(Address,'big',signed=False)
+        vals[i][2] = Data
+    save_ram(vals,outpath,'hex')
     return vals
 
 def readRotate(words,ser,outpath):
@@ -253,4 +294,5 @@ def readAll(words,ser,outpath): #basic read function, reads in two-byte interval
 
 
 def andbytes(abytes, bbytes):
-    return bytes([a & b for a, b in zip(abytes[::-1], bbytes[::-1])][::-1])
+    val = bytes([a & b for a, b in zip(abytes[::-1], bbytes[::-1])][::-1])
+    return val

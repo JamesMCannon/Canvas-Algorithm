@@ -229,7 +229,40 @@ def save_IF(out_array, out_path, out_type):
                 output.write(str(np.int32(x[5])) + '\n') #FFTi 
     return
 
+def save_ram(out_array, out_path, out_type):
 
+    #save data
+    if out_type =='hex' or out_type =='both':
+        out_name = out_path+'_hex.txt'
+
+        if not(os.path.exists(out_name)):
+        #set up headers if file doesn't already exist
+            with open(out_name, 'a') as output:
+                output.write('OpCode' + '\t') #OpCode
+                output.write('Address' + '\t') #RAM Address 
+                output.write('Data' + '\n') #Data
+        
+        with open(out_name, 'a') as output:
+            for x in out_array:
+                output.write(format(np.uint8(x[0]) & 0xff, '02X') + '\t') #OpCode
+                output.write(format(np.uint16(x[1]) & 0xfff, '03X') + '\t') #RAM Address
+                output.write(format(np.uint64(x[2]) & 0xffffffffffffffff, '016X') + '\n') #Data 
+    if out_type == 'int' or out_type == 'both':
+        out_name = out_path+'_int.txt'
+
+        if not(os.path.exists(out_name)):
+        #set up headers if file doesn't already exist
+            with open(out_name, 'a') as output:
+                output.write('OpCode' + '\t') #OpCode
+                output.write('Address' + '\t') #Ram Address 
+                output.write('Data' + '\n') #Data 
+
+        with open(out_name, 'a') as output:
+            for x in out_array:
+                output.write(str(np.uint8(x[0])) + '\t') #OpCode
+                output.write(str(np.uint16(x[1])) + '\t') #RAM Address
+                output.write(str(np.uint64(x[2])) + '\n') #Data 
+    return
 
 def save_xspectra(out_array, out_path, out_type):
 

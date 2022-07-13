@@ -68,14 +68,14 @@ Config = b'\x7E\x57\xCF\x16'
 
 #Generate input signal from file or aribitrarily
 fromFile = True
-num = 1
+num = 8
 
 if fromFile:
     inputs = 'Inputs/'
     
     amp = "high-high_"
-    phase = "35deg"
-    f = "_10khz"
+    phase = "5deg"
+    f = "_03khz"
     file0 = inputs+amp+"0deg"+f+'.txt'
     file1 = inputs+amp+phase+f+'.txt' 
     channels0_td = read_FPGA_input(file0,signed=True,show_plots=False)
@@ -98,7 +98,7 @@ FPGA_ser = serial.Serial("COM4",115200)
 
 
 #main loop
-spec_core = b'\x00'
+spec_core = b'\x01'
 iterate = 1
 while iterate < 2:
     #set test mode
@@ -108,7 +108,7 @@ while iterate < 2:
             mode = 'xspec_real'
         else: 
             #testmode = X_Spec_Imaginary_Results
-            testmode = X_Spec_Imaginary_Results #For testing, change this testmode
+            testmode = X_Spec_Real_Results #For testing, change this testmode
             readcon = 'none' #valid options are 'all' or 'none'. All dumps all data to a file, none proceeds with normal mode
             mode = 'xspec_imaginary'
     else:
@@ -157,7 +157,7 @@ while iterate < 2:
     print('Data buffered after %f seconds', del_t)
 
 
-    #testmode = Spec_to_X_Spec_IF
+    testmode = X_Spec_Imaginary_Results
     #configure FPGA
     ser_write(FPGA_ser,Sync_Pat+Config+spec_core+testmode,False)
     #time.sleep(2.5)
