@@ -56,7 +56,7 @@ def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, chan
     c2_real_data = np.asarray(c2_real_data)
     c2_real_data = c2_real_data.reshape(-1,512)
 
-    c2_imag_data = np.asarray(c1_imag_data)
+    c2_imag_data = np.asarray(c2_imag_data)
     c2_imag_data = c2_imag_data.reshape(-1,512)
 
 
@@ -81,13 +81,15 @@ def fft_xspec_power(c1_real_data, c1_imag_data, c2_real_data, c2_imag_data, chan
         plt.show()
         plt.close()
 
+    xspec_pwr_r = flatten(xspec_pwr_r)
+    xspec_pwr_i = flatten(xspec_pwr_i)
+
     if save_output: # this IS signed!
         out_path = out_folder+'/channel'+str(channel_nums[0])+str(channel_nums[1])+'_xspectra_real_pwr'
         save_output_txt(xspec_pwr_r, out_path, save_output, 's-64')
         out_path = out_folder+'/channel'+str(channel_nums[0])+str(channel_nums[1])+'_xspectra_imag_pwr'
         save_output_txt(xspec_pwr_i, out_path, save_output, 's-64')
 
-    xspec_pwr_r = flatten(xspec_pwr_r)
-    xspec_pwr_i = flatten(xspec_pwr_i)
+   
     return xspec_pwr_r, xspec_pwr_i
 # -------------------------------------------------------------------------------------
