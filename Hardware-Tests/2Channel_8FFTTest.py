@@ -68,14 +68,14 @@ Config = b'\x7E\x57\xCF\x16'
 
 #Generate input signal from file or aribitrarily
 fromFile = True
-num = 8
+num = 1
 
 if fromFile:
     inputs = 'Inputs/'
     
     amp = "high-high_"
-    phase = "5deg"
-    f = "_03khz"
+    phase = "83deg"
+    f = "_24khz"
     file0 = inputs+amp+"0deg"+f+'.txt'
     file1 = inputs+amp+phase+f+'.txt' 
     channels0_td = read_FPGA_input(file0,signed=True,show_plots=False)
@@ -99,31 +99,36 @@ FPGA_ser = serial.Serial("COM4",115200)
 
 #main loop
 spec_core = b'\x01'
-iterate = 1
+iterate = 0
 while iterate < 2:
     #set test mode
     if xspec_test:
         if iterate == 0:
             testmode = X_Spec_Real_Results
+            readcon = 'none'
             mode = 'xspec_real'
         else: 
             #testmode = X_Spec_Imaginary_Results
-            testmode = X_Spec_Real_Results #For testing, change this testmode
+            testmode = X_Spec_Imaginary_Results #For testing, change this testmode
             readcon = 'none' #valid options are 'all' or 'none'. All dumps all data to a file, none proceeds with normal mode
             mode = 'xspec_imaginary'
     else:
         iterate+=1
         testmode = Spectra_Results
+        readcon = 'none'
         mode = ''
 
     #reset FPGA
     ser_write(FPGA_ser,Sync_Pat+SW_Reset,False)
     print('FPGA Reset')
 
-    #reset PIC
-    time.sleep(0.5)
+    #reset PIC and flush FPGA Serial Port
     ser_write(pic_ser,ResetPIC+lf,True)
-    time.sleep(0.5)
+
+    FPGA_ser.close()
+    time.sleep(0.25)
+    FPGA_ser.open()
+
     #response_check(pic_ser,ack)
     #print('Reset Received')
     response_check(pic_ser,initiated)
@@ -132,9 +137,7 @@ while iterate < 2:
     #Set number of samples to be buffered
     to_Send = num_samples.to_bytes(4,'big',signed=False)
     ser_write(pic_ser,SetLength+to_Send+lf)
-
-    #Wait for acknowledge
-    response_check(pic_ser,ack)
+    response_check(pic_ser,ack) #Wait for acknowledge
     print('Data Length Set')
 
     #buffer data
@@ -148,29 +151,20 @@ while iterate < 2:
             print('buffering ', var)
         var = var+1
         #response_check(pic_ser,ack)
-
-    #check for complete from PIC
-    response_check(pic_ser,complete)
-
-    t1 = time.perf_counter()
-    del_t = t1-t0
+    response_check(pic_ser,complete) #check for complete from PIC
+    del_t = time.perf_counter() - t0
     print('Data buffered after %f seconds', del_t)
 
-
-    testmode = X_Spec_Imaginary_Results
-    #configure FPGA
+    #configure and start FPGA
     ser_write(FPGA_ser,Sync_Pat+Config+spec_core+testmode,False)
-    #time.sleep(2.5)
-
-    #Start FPGA
+    print('FPGA Configured')
     ser_write(FPGA_ser,Sync_Pat+Test_Enable,False)
     print('FPGA Started')
-    #time.sleep(2.5)
  
     out_folder = 'HW-output'
-    FPGA_rev = "Rev14p1_"
+    FPGA_rev = "60220713_"
 
-    vals = readFPGA(FPGA_ser,readcon=readcon,num_read=num,outpath=out_folder+'/FPGA-' + FPGA_rev + amp + f + mode)
+    vals = readFPGA(FPGA_ser,readcon=readcon,num_read=num,outpath=out_folder+'/FPGA-' + FPGA_rev + amp + phase + f)
 
     v=int(vals[0][0])
     print('First Entry: ',v) #Let's look at the first datum

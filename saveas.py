@@ -280,8 +280,8 @@ def save_xspectra(out_array, out_path, out_type):
         with open(out_name, 'a') as output:
             for x in out_array:
                 output.write(format(np.uint16(x[0]) & 0xffff, '04X') + '\t') #bin number
-                output.write(format(np.int32(x[1]) & -1, '08X') + '\t') #Compressed Result 
-                output.write(format(np.int64(x[2]) & -1, '016X') + '\n') #Uncompressed Result
+                output.write(format(np.uint16(x[1]) & 0xffff, '04X') + '\t') #Compressed Result 
+                output.write(format(np.uint64(x[2]) & 0xffffffffffffffff, '016X') + '\n') #Uncompressed Result
     if out_type == 'int' or out_type == 'both':
         out_name = out_path+'_int.txt'
 
@@ -352,3 +352,7 @@ def saveascsv(fname, adds, outputfolder='output'):
     with open(outputfolder+'/'+fname, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerows(adds)
+
+def andbytes(abytes, bbytes):
+    val = bytes([a & b for a, b in zip(abytes[::-1], bbytes[::-1])][::-1])
+    return val
