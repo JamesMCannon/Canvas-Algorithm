@@ -171,7 +171,8 @@ def readRAM(words, ser, outpath):
         OpCode = int.from_bytes(ser.read(1), 'big', signed=False)
         options = ser.read(2)
         dump = ser.read(1)
-        Data = int.from_bytes(ser.read(8),'big',signed=False)
+        dataread = ser.read(8)
+        Data = int.from_bytes(dataread,'big',signed=True)
 
         Address = andbytes(options,address_mask)
         
@@ -244,16 +245,20 @@ def readSpec(words,ser,outpath):
     return vals
 
 def readXSpec(words,ser,outpath):
-    vals = np.zeros((words,3),dtype=np.int64)
+    vals = np.zeros((words,3),dtype=np.uint64)
     for i in range(words):
+        neg = False
         cur_bin = int.from_bytes(ser.read(2),'big')
         v=ser.read(2)
         mask = b'\x0f\xff'#4 bits unused 
         comp_rst = andbytes(v,mask)
         comp_rst = int.from_bytes(comp_rst,'big') #uses sign-magnitude not two's compliment
-        if (comp_rst>2048): #2^11 is 2048 so we use this as our comparison 
-            comp_rst = (comp_rst-2048) 
-        uncomp_rst = int.from_bytes(ser.read(8),'big',signed=True) #uses two's compliment
+        #if (comp_rst>2048): #2^11 is 2048 so we use this as our comparison 
+            #comp_rst = 2048 - comp_rst 
+            #neg = True
+        uncomp_rst = int.from_bytes(ser.read(8),'big',signed=False) #uses sign-magnitude, not two's compliment
+        #if (neg):
+            #uncomp_rst = -uncomp_rst
 
         vals[i][0] = cur_bin
         vals[i][1] = comp_rst
