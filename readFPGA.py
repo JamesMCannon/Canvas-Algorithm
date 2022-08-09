@@ -33,6 +33,29 @@ def read_FPGA_input(file, b=16, signed=True, show_plots=False):
     return fpga_in_data
 # ------------------------------------------------------------------------------------
 
+def read_FPGA_cmprs(file, line_n):
+    f = open(file, 'r')
+    datalines = [line for line in f]
+    comp = datalines[line_n:]
+    f.close()
+
+    sign_mask = b'\x08\x00'
+    mag_mask = b'\x07\xFF'
+
+    comp_val=[]
+    for i in range(len(comp)):
+        hex_comp = bytes.fromhex(comp[i])
+        sign = andbytes(hex_comp,sign_mask)
+        comp_mag = int.from_bytes(andbytes(hex_comp,mag_mask),'big')
+        if int.from_bytes(sign,'big')>0:
+            comp_val.append(-comp_mag)
+        else:
+            comp_val.append(comp_mag)
+            
+    d1 = comp_val
+
+    return d1
+
 # ---------------------------- read INT input ---------------------------------------
 def read_INT_input(file, show_plots=False):
     f = open(file, 'r')
@@ -146,6 +169,41 @@ def read_FPGA_input_lines(file, b, line_n, x, y, signed=True, show_plots=False):
 
     return d1, d2
 
+def read_FPGA_xspectra(file, line_n):
+    f = open(file, 'r')
+    datalines = [line.split() for line in f]
+    sbin=[];comp=[];uncomp=[]
+    for r in datalines:
+        sbin.append(r[0])
+        comp.append(r[1])
+        uncomp.append(r[2])
+    sbin = sbin[line_n:]
+    comp = comp[line_n:]
+    uncomp = uncomp[line_n:]
+    f.close()
+
+    sign_mask = b'\x08\x00'
+    mag_mask = b'\x07\xFF'
+
+    comp_val=[]
+    uncomp_val=[]
+    for i in range(len(comp)):
+        hex_comp = bytes.fromhex(comp[i])
+        sign = andbytes(hex_comp,sign_mask)
+        comp_mag = int.from_bytes(andbytes(hex_comp,mag_mask),'big')
+        if int.from_bytes(sign,'big')>0:
+            comp_val.append(-comp_mag)
+            uncomp_val.append(-int(uncomp[i],16))
+        else:
+            comp_val.append(comp_mag)
+            uncomp_val.append(int(uncomp[i],16))
+
+
+    d1 = comp_val
+    d2 = uncomp_val
+
+    return d1, d2
+
 # ------------------------------------------------------------------------------------ 
 
 def read_FPGA_fft(file,b=32,header=True,signed=True):
@@ -161,3 +219,7 @@ def read_FPGA_fft(file,b=32,header=True,signed=True):
     real = [twos_complement(p,b) for p in re]
     imaginary = [twos_complement(p,b) for p in im]
     return real,imaginary
+
+def andbytes(abytes, bbytes):
+    val = bytes([a & b for a, b in zip(abytes[::-1], bbytes[::-1])][::-1])
+    return val
