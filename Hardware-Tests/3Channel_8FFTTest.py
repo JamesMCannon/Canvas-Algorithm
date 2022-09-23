@@ -98,13 +98,18 @@ counter = np.reshape(counter,(3,10))
 
 #test0 = channels0_td[0:num_samples]
 #test1 = channels1_td[0:num_samples]
-test0 = counter[0,:]
-test1 = counter[1,:]
-test2 = counter[2,:]
+
+#test0 = counter[0,:].tolist()
+#test1 = counter[1,:].tolist()
+#test2 = counter[2,:].tolist()
+
+test0 = [0, 1, 2, 3, 4, 5, 6, 7, ]
+test1 = [8, 16, 24, 32, 40, 48, 56, 64]
+test2 = [128, 256, 384, 512, 640, 768, 896, 1024]
 
 #initialize serial ports
-pic_ser = serial.Serial("COM5",115200)
-FPGA_ser = serial.Serial("COM4",115200)
+pic_ser = serial.Serial("COM6",115200)
+FPGA_ser = serial.Serial("COM5",115200)
 
 #reset FPGA
 ser_write(FPGA_ser,Sync_Pat+SW_Reset,False)
@@ -112,6 +117,8 @@ print('FPGA Reset')
 
 #reset PIC
 ser_write(pic_ser,ResetPIC+lf,True)
+time.sleep(0.25)
+#response_check(pic_ser,ack) #Wait for acknowledge
 response_check(pic_ser,initiated)
 print('PIC Reset')
 
@@ -126,6 +133,7 @@ time.sleep(0.25)
 FPGA_ser.open()
 
 #Set number of samples to be buffered
+num_samples=8
 to_Send = num_samples.to_bytes(4,'big',signed=False)
 ser_write(pic_ser,SetLength+to_Send+lf)
 response_check(pic_ser,ack) #Wait for acknowledge
@@ -190,9 +198,16 @@ while iterate < 2:
     print('FPGA Configured')
     ser_write(FPGA_ser,Sync_Pat+Test_Enable,False)
     print('FPGA Started')
- 
+    time.sleep(0.5)
+
     out_folder = 'HW-output'
     FPGA_rev = "60220713_"
+
+
+    amp = 't'
+    phase= 'es'
+    f= 't'
+
 
     vals = readFPGA(FPGA_ser,readcon=readcon,num_read=num,outpath=out_folder+'/FPGA-' + FPGA_rev + amp + phase + f)
 

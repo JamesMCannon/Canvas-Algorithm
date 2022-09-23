@@ -93,8 +93,8 @@ test0 = channels0_td[0:num_samples]
 test1 = channels1_td[0:num_samples]
 
 #initialize serial ports
-pic_ser = serial.Serial("COM5",115200)
-FPGA_ser = serial.Serial("COM4",115200)
+pic_ser = serial.Serial("COM6",115200)
+FPGA_ser = serial.Serial("COM5",115200)
 
 
 #main loop
